@@ -5,7 +5,7 @@
 #include <cstddef>
 #include <vector>
 
-namespace Linaro {
+namespace linaro {
 								 
 #define BYTECODE(name) name, 
 enum class Bytecode : uint8_t { 
@@ -33,7 +33,6 @@ private:
     int getNumArguments(uint8_t op) const;
     void disassembleBytecode(uint8_t op) const;
     const char* bytecodeToString(uint8_t op) const;
-
     std::vector<uint8_t> m_code;
 };
 

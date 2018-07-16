@@ -4,7 +4,7 @@
 #include <cstdarg>
 #include <stdexcept>
 
-namespace Linaro {
+namespace linaro {
 
 #define CHECK(condition)												        \
 	if(!condition)													          	\

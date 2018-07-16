@@ -5,7 +5,7 @@
 #include "compiler.h"
 #include "../linaro_utils/logging.h"
 
-namespace Linaro {
+namespace linaro {
 
 void BytecodeChunk::disassembleChunk() const {
 	getNumArguments(0);

@@ -2,14 +2,8 @@
 
 #include "compiler/chunk.h"
 
-using namespace Linaro;
+using namespace linaro;
 
 int main() {
-	try {
-		BytecodeChunk* chunk = new BytecodeChunk();
-		chunk->disassembleChunk();
-	} catch(std::runtime_error e) {
-		std::cout << e.what() << '\n';
-	}
-	return 0;
+	UNREACHABLE();
 }
