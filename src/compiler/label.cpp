@@ -1,4 +1,4 @@
-#include "compiler.h"
+#include "label.h"
 
 namespace linaro {
 

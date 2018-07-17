@@ -41,6 +41,14 @@
         "xstddef": "cpp",
         "xtr1common": "cpp",
         "cstdarg": "cpp",
-        "array": "cpp"
+        "array": "cpp",
+        "*.tcc": "cpp",
+        "cctype": "cpp",
+        "clocale": "cpp",
+        "cwctype": "cpp",
+        "unordered_map": "cpp",
+        "fstream": "cpp",
+        "functional": "cpp",
+        "sstream": "cpp"
     }
 }

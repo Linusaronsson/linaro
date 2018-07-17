@@ -1,4 +1,4 @@
-#include "compiler.h"
+#include "constant_pool.h"
 
 namespace linaro {
 

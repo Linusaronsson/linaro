@@ -1,4 +1,4 @@
-#include "compiler.h"
+#include "symbol_table.h"
 
 namespace linaro {
 

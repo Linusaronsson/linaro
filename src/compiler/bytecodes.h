@@ -48,10 +48,17 @@ BYTECODE(gstore)
 /* Local variable access */						
 BYTECODE(load)									    
 BYTECODE(store)									
-                                                
-BYTECODE(print)										
-BYTECODE(ret)											
-BYTECODE(call)										
-BYTECODE(call_tos)								    
-BYTECODE(call_method)							    
+
+/* Built-in functions */                             
+BYTECODE(print)		
+
+/* Return from sub routine */
+BYTECODE(ret)		
+
+/* Functions calls */
+BYTECODE(call) //Calls argument (index into constant pool) 									
+BYTECODE(call_tos) //Calls top of operand stack						    
+BYTECODE(call_method) //Calls method belonging to class descriptor. (Instance of the class must be on TOS)  
+
+/* Halt execution */
 BYTECODE(halt)	

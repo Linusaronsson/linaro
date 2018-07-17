@@ -1,4 +1,4 @@
-#include "compiler.h"
+#include "scope.h"
 
 namespace linaro {
 
