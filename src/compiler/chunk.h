@@ -5,7 +5,11 @@
 #include <cstddef>
 #include <vector>
 
+#include "../parsing/token.h"
+
 namespace linaro {
+
+using bytecode = uint8_t;
 								 
 #define BYTECODE(name) name, 
 enum class Bytecode : uint8_t { 
@@ -24,16 +28,20 @@ bytecode_to_string[(long)Bytecode::NUM_BYTECODES] {
 class BytecodeChunk {
 public:
     BytecodeChunk() {}
-    std::vector<uint8_t>* code() { return &m_code; }
+    std::vector<bytecode>* code() { return &m_code; }
     size_t chunk_size() const { return m_code.size(); }
 	size_t current_offset() const { return m_code.size() + 1; }
-    void push_back(uint8_t op) { m_code.push_back(op); }
+    void push_back(bytecode op) { m_code.push_back(op); }
     void disassembleChunk() const;
 private:
-    int getNumArguments(uint8_t op) const;
-    void disassembleBytecode(uint8_t op) const;
-    const char* bytecodeToString(uint8_t op) const;
-    std::vector<uint8_t> m_code;
+    int getNumArguments(bytecode op) const;
+    void disassembleBytecode(bytecode op) const;
+    const char* bytecodeToString(bytecode op) const;
+
+    std::vector<bytecode> m_code; // the code
+    // Each bytecode is associated with a location in the source file.
+    // This is used for reporting potential errors at runtime.
+    std::vector<Location> m_loc; 
 };
 
 } // Namespace linaro

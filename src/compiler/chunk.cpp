@@ -11,16 +11,16 @@ void BytecodeChunk::disassembleChunk() const {
 	getNumArguments(0);
 }
 
-void BytecodeChunk::disassembleBytecode(uint8_t op) const {
+void BytecodeChunk::disassembleBytecode(bytecode op) const {
 	//printf("%s\n", )
 }
 
-const char* BytecodeChunk::bytecodeToString(uint8_t op) const {
-	assert(op < (uint8_t)Bytecode::NUM_BYTECODES);
+const char* BytecodeChunk::bytecodeToString(bytecode op) const {
+	assert(op < (bytecode)Bytecode::NUM_BYTECODES);
 	return bytecode_to_string[op];
 }
 
-int BytecodeChunk::getNumArguments(uint8_t op) const {
+int BytecodeChunk::getNumArguments(bytecode op) const {
 	switch (op) {
 	default:
 		UNREACHABLE();

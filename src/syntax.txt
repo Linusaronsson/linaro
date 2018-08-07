@@ -1,0 +1,45 @@
+- VALUES:
+
+number: [0-9] (integer and floating point)
+string: "abc"
+array: {value1, value2, ...}
+hash_map: {value1 : value2, value3 : value4, ...}
+function: (a, b) : { -> a + b }
+null: null
+
+- VARIABLES
+
+var_name = value
+
+- ARRAYS
+
+- FUNCTIONS
+
+function name() {}
+
+//need a thread pool to keep track of threads. There will be a built in type "Thread". 
+// Each thread definition (just function basically) is put in a thread pool. If you want 
+// to do a "join" on the thread, there will be a bytecode that simply finds it in the 
+// thread pool and does what it needs to. Thread type can contain info about if it is 
+// running etc. (or just store std::thread which keeps this info already i guess?) 
+
+thread name() {}
+
+- CONDITIONAL CONTROL FLOW
+
+- LOOPS
+
+- OBJECTS
+
+- OS DEPENDENT FUNCTIONALITY (file handling, socket communication, HTTP server etc)
+
+- FUNCTIONAL PROGRAMMING CHARACTERISTICS
+
+- MATHEMATICAL CHARACTERISTICS
+
+---------------------------------------------------------------------------------------
+
+- GUI GRAPH PLOTTING
+
+- OTHER GUI
+

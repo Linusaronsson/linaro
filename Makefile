@@ -12,7 +12,7 @@ VPATH = $(wildcard ./src/*):$(wildcard ./*)
 
 #$(info $$var is [${OBJS}])echo Hello world 
 
-CC = g++
+CC = sudo g++
 DEBUG = -g
 CFLAGS = -std=c++17 -Wall -pedantic -MMD -MP -c $(DEBUG)
 LFLAGS = -std=c++17 -Wall -pedantic $(DEBUG)
