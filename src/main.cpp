@@ -8,42 +8,29 @@
 
 using namespace linaro;
 
-void f(std::string& f) {
-    std::string pp = "new";
-    f = pp;
-    printf("%p\n", &f);
-    printf("%p\n", &pp);
-    std::cout << f;
-} 
+int main() {
+	uint64_t t1 = 0;
+	clock_t begin = clock();
 
-int main(int argc, char** argv) {
-    
-    std::string p = "hello there";
-    std::string &x = p;
-    printf("%p\n", &p);
-    printf("%p\n", &x);
-    std::cout << x;
+#ifdef DEBUG_LEXER
+	//Lexer debug code here
+#endif
 
-   /*
-    std::string z = "hello 22";
-    x = z;
-    printf("%p\n", &z);
-    printf("%p\n", &x);
-    std::cout << x;
-*/
+#ifdef DEBUG_PARSER
+	//Parser debug code here
+#endif
 
 
-    /*
-    uint64_t t1 = 0;
-    clock_t begin = clock();
-    while(1) {
-        t1++;
-        if(t1 == 0) {
-            clock_t end = clock();
-            std::cout << "32bit overflow took " << double(end - begin) / CLOCKS_PER_SEC << "\n";
-            begin = clock();
-        }
-    }
-    */
+#ifdef DEBUG_CODE_GENERATOR
+	//Code generation debug code here
+#endif
+
+#ifdef DEBUG_VM
+	//VM debug code here
+#endif
+	
+	clock_t end = clock();
+	std::cout << "Execution time: " << double(end - begin) / CLOCKS_PER_SEC << "\n";
+
 }
 

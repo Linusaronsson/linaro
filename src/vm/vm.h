@@ -27,7 +27,9 @@ public:
     ~VM() {}
     int operandSize() const { return m_operand_stack.size(); }
     // create a VM instance from source file and execute
-    VMEndingStatus interpret(const std::string& source, const char* filename = nullptr);
+    VMEndingStatus interpret(const std::string& source, 
+			const char* filename = nullptr);
+
     // execute from predefined VM environment (?)
     VMEndingStatus interpret(const VMContext& vm_context);
 

@@ -1,6 +1,5 @@
 #include <iostream>
 #include <unordered_map>
-
 struct Signature {
 	public:
 	std::string name;
