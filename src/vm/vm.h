@@ -23,29 +23,29 @@ enum VMEndingStatus : uint8_t {
 
 class VM {
 public:
-    VM() { /* m_globals = new Value[64]; */ }
+    VM() { /* m_globals = new value[64]; */ }
     ~VM() {}
-    int operandSize() const { return m_operand_stack.size(); }
-    // create a VM instance from source file and execute
+    int operandsize() const { return m_operand_stack.size(); }
+    // create a vm instance from source file and execute
     VMEndingStatus interpret(const std::string& source, 
 			const char* filename = nullptr);
 
-    // execute from predefined VM environment (?)
+    // execute from predefined vm environment (?)
     VMEndingStatus interpret(const VMContext& vm_context);
 
 private:
-    // runs main BytecodeChunk initially. Upon function calls, 
-    // this will be called recursively for the function's BytecodeChunk.
+    // runs main bytecodechunk initially. upon function calls, 
+    // this will be called recursively for the function's bytecodechunk.
     VMEndingStatus execute(BytecodeChunk* code);
-    //void call(FunctionDescriptor* fn);
+    //void call(functiondescriptor* fn);
 
-    // Extracting data from bytecode chunk
-    //uint64_t read64bitOperand(bytecode* ip);
-    uint32_t read32bitOperand(bytecode* ip);
-    uint16_t read16bitOperand(bytecode* ip);
-    uint8_t read8bitOperand(bytecode* ip);
+    // extracting data from bytecode chunk
+    //uint64_t read64bitoperand(bytecode* ip);
+    uint32_t read32bitoperand(bytecode* ip);
+    uint16_t read16bitoperand(bytecode* ip);
+    uint8_t read8bitoperand(bytecode* ip);
 
-    void binaryOperation(bytecode type);
+    void binaryoperation(bytecode type);
     
     BytecodeChunk* m_main_code;
     ConstantPool* m_const_pool;
@@ -55,7 +55,7 @@ private:
     // operand stack
     std::stack<Value> m_operand_stack;
     // call stack
-    //std::stack<StackFrame> m_call_stack;
+    //std::stack<stackframe> m_call_stack;
 };
 
 } //Namespace Torus

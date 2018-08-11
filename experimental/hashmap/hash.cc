@@ -1,21 +1,25 @@
+#include <algorithm>
+#include <vector>
 #include <iostream>
 #include <unordered_map>
 struct Signature {
-	public:
-	std::string name;
-	int num_args;
-	Signature(std::string n, int a) : name(n), num_args(a) {}
-	
-	 bool operator==(const Signature &other) const { 
-		return name == other.name && num_args == other.num_args;
-	 }
+    public:
+    std::string name;
+    int num_args;
+    Signature(std::string n, int a) : name(n), num_args(a) {}
+    
+    bool operator==(const Signature &other) const { 
+        return name == other.name &&
+            num_args == other.num_args;
+    }
 };
 
 struct KeyHasher
 {
   std::size_t operator()(const Signature& k) const
   {
-    return (std::hash<std::string>()(k.name)) ^ (std::hash<int>()(k.num_args) << 1);
+    return (std::hash<std::string>()(k.name)) ^
+        (std::hash<int>()(k.num_args) << 1); 
   }
 };
 
@@ -39,13 +43,21 @@ int lookup(Signature& s) {
 }
 
 int main() {
+        KeyHasher t;
+        std::vector<Signature> v;
+        for (int i = 0; i < 10000; ++i) {
+            Signature s(std::to_string(i), i);        
+            v.push_back(s);
+            std::cout << "HERE: " << t(s) << std::endl;
+            if(std::find(v.begin(), v.end(), s) == v.end()) {
+                std::cout << "COLLISION!" << std::endl;
+            }
+        } 
 
-	Signature f1("func1", 0);
-	Signature f2("func1", 2);
-	Signature f3("asdasdasd", 999);
-	insert(f1);
+
+        //insert(f1);
 	//insert(f2);
-	std::cout << t[f2];
-	std::cout << t[f3];
+	//std::cout << t[f2];
+	//std::cout << t[f3];
 	return 0;
 }

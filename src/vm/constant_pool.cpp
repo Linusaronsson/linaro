@@ -2,4 +2,13 @@
 
 namespace linaro {
 
+int ConstantPool::addIfNew(const Value& val) {
+
+}
+
+
+
+
+
+
 } // Namespace Linaro
