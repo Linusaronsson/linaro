@@ -1,1 +1,1 @@
-print(hash("asd-f"))
+print(hash("asd-f")):

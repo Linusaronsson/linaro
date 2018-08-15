@@ -32,7 +32,9 @@ int main() {
 #endif
         	
     clock_t end = clock();
-    std::cout << "Execution time: " << double(end - begin) / CLOCKS_PER_SEC << "\n";
+    std::cout << "Execution time: " 
+        << double(end - begin) / CLOCKS_PER_SEC 
+        << "\n";
     return 0;
 }
 

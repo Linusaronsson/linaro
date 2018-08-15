@@ -14,7 +14,7 @@ VPATH = $(wildcard ./src/*):$(wildcard ./*)
 
 CC = sudo g++
 DEBUG = -g
-CFLAGS = -std=c++17 -Wall -pedantic -MMD -MP -c $(DEBUG)
+CXXFLAGS = -std=c++17 -Wall -pedantic -MMD -MP -c $(DEBUG)
 LFLAGS = -std=c++17 -Wall -pedantic $(DEBUG)
 
 all: build run
@@ -29,7 +29,7 @@ torus: $(OBJS)
 	$(CC) $(LFLAGS) $(OBJS) -o debug/torus
 
 debug/%.o : %.cpp
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(CXXFLAGS) $< -o $@
 
 debug/%.d: ;
 .PRECIOUS: debug/%.d

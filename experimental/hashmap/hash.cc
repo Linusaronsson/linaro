@@ -45,13 +45,14 @@ int lookup(Signature& s) {
 int main() {
         KeyHasher t;
         std::vector<Signature> v;
-        for (int i = 0; i < 10000; ++i) {
-            Signature s(std::to_string(i), i);        
-            v.push_back(s);
+        for (int i = 0; i < 1000000000; ++i) {
+            Signature s("test", i);        
             std::cout << "HERE: " << t(s) << std::endl;
-            if(std::find(v.begin(), v.end(), s) == v.end()) {
+            if(std::find(v.begin(), v.end(), s) != v.end()) {
                 std::cout << "COLLISION!" << std::endl;
+                return 0;
             }
+            v.push_back(s);
         } 
 
 
