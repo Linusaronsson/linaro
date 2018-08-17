@@ -1,9 +1,9 @@
-#include <iostream>
 #include <ctime>
+#include <iostream>
 
 #include "compiler/chunk.h"
-#include "linaro_utils/logging.h"
 #include "compiler/compiler.h"
+#include "linaro_utils/logging.h"
 #include "vm/vm.h"
 
 #define DEBUG_VM
@@ -11,30 +11,27 @@
 using namespace linaro;
 
 int main() {
-    uint64_t t1 = 0;
-    clock_t begin = clock();
+  uint64_t t1 = 0;
+  clock_t begin = clock();
 
 #ifdef DEBUG_LEXER
-    //Lexer debug code here
+  // Lexer debug code here
 #endif
 
 #ifdef DEBUG_PARSER
-    //Parser debug code here
+  // Parser debug code here
 #endif
 
-
 #ifdef DEBUG_CODE_GENERATOR
-    //Code generation debug code here
+  // Code generation debug code here
 #endif
 
 #ifdef DEBUG_VM
-    //VM debug code here
+  // VM debug code here
 #endif
-        	
-    clock_t end = clock();
-    std::cout << "Execution time: " 
-        << double(end - begin) / CLOCKS_PER_SEC 
-        << "\n";
-    return 0;
-}
 
+  clock_t end = clock();
+  std::cout << "Execution time: " << double(end - begin) / CLOCKS_PER_SEC
+            << "\n";
+  return 0;
+}

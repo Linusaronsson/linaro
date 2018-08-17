@@ -1,8 +1,6 @@
 #ifndef COMPILER_H
 #define COMPILER_H
 
-namespace linaro {
+namespace linaro {}  // Namespace linaro
 
-} // Namespace linaro
-
-#endif // COMPILER_H
+#endif  // COMPILER_H

@@ -1,5 +1,3 @@
 #include "compiler.h"
 
-namespace linaro {
-
-} // Namespace Linaro
+namespace linaro {}  // namespace linaro

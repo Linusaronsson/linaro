@@ -3,5 +3,5 @@
 namespace linaro {
 
 
-} // Namespace 
+} // Namespace
 
