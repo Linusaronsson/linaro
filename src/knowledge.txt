@@ -15,3 +15,33 @@ COMPILES TO THIS BYTECODE:
              10 POP_TOP
              12 LOAD_CONST               0 (None)
              14 RETURN_VALUE
+
+
+-----------------------------------------------------------------
+
+For strings:
+
+All identical strings point to the same string in the const pool. If a string
+is changed, copy-on-write will take affect and simply create a new instance of
+this string in the const pool (using addNew(...)). This means that if a another
+string changes into the same thing they will again point to the same string in
+the const pool. (Maybe good, might be bad)
+
+For values and how to refer to them etc:
+
+I think the best way is to just store them in c++ standard collections like
+std::vector, std::stack, std::array, std::unordered_map etc. This means these
+collections deal with the memory allocations etc.
+
+E.g: (vector can be any std:: collection)
+
+std::vector<Value> values;
+
+Where the basic structure of a value will be this:
+
+class Value {
+    ValueType type;
+    std::unique_ptr<Object> obj;
+};
+
+where Object is the interface for all Linaro value types.
