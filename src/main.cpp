@@ -12,15 +12,30 @@
 
 using namespace linaro;
 
+class test {
+ public:
+  test(int p) { std::cout << "default constructor" << std::endl; }
+  test(const test& t) {
+    x = t.x;
+    std::cout << "copy constructor\n";
+  }
+  test(test&& t) {
+    x = t.x;
+    std::cout << "move constructor\n";
+  }
+  ~test() { std::cout << "destructor" << std::endl; }
+
+ private:
+  int x;
+};
+
 int main() {
   //  uint64_t t1 = 0;
   clock_t begin = clock();
   std::cout << "Entered main..." << std::endl;
-  Value v = String();
-  //)  v.print();
-  v.print();
+  std::cout << "\n" << std::endl;
+  std::cout << "\n\n\n";
 
-  std::cout << "\n\n" << std::endl;
 #ifdef DEBUG_LEXER
   // Lexer debug code here
 #endif

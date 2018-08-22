@@ -21,9 +21,9 @@ uint32_t VM::read32bitOperand(uint8_t* ip) {
   return ip[0] | (ip[1] << 8) | (ip[2] << 16) | (ip[3] << 24);
 }
 
-uint16_t VM::read16bitOperand(bytecode* ip) {}
+uint16_t VM::read16bitOperand(bytecode* ip) { return 0; }
 
-uint8_t VM::read8bitOperand(bytecode* ip) {}
+uint8_t VM::read8bitOperand(bytecode* ip) { return 0; }
 
 void VM::binaryoperation(bytecode type) {}
 

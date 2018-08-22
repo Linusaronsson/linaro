@@ -7,7 +7,6 @@
 #include "value.h"
 
 namespace linaro {
-
 /*
  * A constant pool stores frequently used runtime Values.
  * TODO: Implement Value first (define print/hash methods) because
@@ -18,7 +17,7 @@ class ConstantPool {
   int m_index = 0;
   // TODO: change to hash map (needed for addIfNew)
   // std::vector<Value> m_constants;
-  std::unordered_map<int, Value*> m_constants;
+  std::unordered_map<int, Value> m_constants;
 
  public:
   //   int addIfNew(const Value& val);

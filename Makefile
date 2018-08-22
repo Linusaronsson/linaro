@@ -393,6 +393,33 @@ src/vm/constant_pool.cpp.s:
 	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/vm/constant_pool.cpp.s
 .PHONY : src/vm/constant_pool.cpp.s
 
+src/vm/object.o: src/vm/object.cpp.o
+
+.PHONY : src/vm/object.o
+
+# target to build an object file
+src/vm/object.cpp.o:
+	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/vm/object.cpp.o
+.PHONY : src/vm/object.cpp.o
+
+src/vm/object.i: src/vm/object.cpp.i
+
+.PHONY : src/vm/object.i
+
+# target to preprocess a source file
+src/vm/object.cpp.i:
+	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/vm/object.cpp.i
+.PHONY : src/vm/object.cpp.i
+
+src/vm/object.s: src/vm/object.cpp.s
+
+.PHONY : src/vm/object.s
+
+# target to generate assembly for a file
+src/vm/object.cpp.s:
+	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/vm/object.cpp.s
+.PHONY : src/vm/object.cpp.s
+
 src/vm/value.o: src/vm/value.cpp.o
 
 .PHONY : src/vm/value.o
@@ -513,6 +540,9 @@ help:
 	@echo "... src/vm/constant_pool.o"
 	@echo "... src/vm/constant_pool.i"
 	@echo "... src/vm/constant_pool.s"
+	@echo "... src/vm/object.o"
+	@echo "... src/vm/object.i"
+	@echo "... src/vm/object.s"
 	@echo "... src/vm/value.o"
 	@echo "... src/vm/value.i"
 	@echo "... src/vm/value.s"

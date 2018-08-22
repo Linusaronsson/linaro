@@ -45,3 +45,26 @@ class Value {
 };
 
 where Object is the interface for all Linaro value types.
+
+
+
+CONST POOL: have one const pool per function instead. This means that memory
+used for local variables etc in a function will be deallocated when the
+function is dropped from the stack.
+
+So: need a way to check if a function will be used ever again in the program,
+if not, then remove it from the outer const pool (which then frees the memory
+it uses in the heap.).
+
+If it is never used, it will not be compiled at all, and no memory will be used
+for it.
+
+If there are constants in the local const pool that already exist in an outer
+const pool, they will be refered to the outer instead to not allocated memory
+for the same constant twice.
+
+idea: keep counter of how many times a function is called in program. THen
+check this variable at runtime every now and then, if it is 0 it will not be
+used again so deallocate it.
+
+

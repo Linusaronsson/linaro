@@ -10,7 +10,7 @@ namespace linaro {
 	if(!condition)													          	\
 		printf("%s: %d: Check failed: %s.", __FILE__, __LINE__, #condition);    
 	//exit(); ?
-																		
+
 #define UNREACHABLE() printf("%s: %d: Unreachable code.", __FILE__, __LINE__);	
 
 } // Namespace Linaro
