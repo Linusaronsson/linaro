@@ -13,12 +13,6 @@ namespace linaro {
 #define VALUES(V) \
   V(Number) V(Boolean) V(String) V(Function) V(Array) V(Thread) V(Noll)
 
-class Object;
-class String;
-class Function;
-class Array;
-class Thread;
-
 /* Linaro Value. Dynamically typed */
 class Value {
  public:
@@ -67,14 +61,6 @@ class Value {
   bool asBoolean() const;
   std::string asString() const;
 
-  size_t hash() const;
-  //  virtual bool operator==(const Value& lhs) = 0;
-  //  struct ValueHasher {
-  //    size_t operator()(const Value& v) const {
-  //      return v.hash();  // defined in each value type class
-  //    }
-  //  };
-
   // Printing values
   void print() const { std::cout << asString(); }
   friend std::ostream& operator<<(std::ostream& s, const Value& v) {
@@ -86,16 +72,14 @@ class Value {
 
   static bool numberEquals(double x, double y);
   static bool numberEquals(const Value& lhs, const Value& rhs);
-
-  // todo: should probly be done with hash maps
   static bool stringEquals(const Value& lhs, const Value& rhs);
 
   // Value equality check. Supports implicit type conversion.
   static bool equal(const Value& lhs, const Value& rhs);
 
-  // Will always return false if type isnt equal. Used for constant pool.
+  // Will always return false if type isn't equal. Used for constant pool.
   // Does the same as Equal at the moment, will change though.
-  static bool strictEqual(const Value& lhs, const Value& rhs);
+  static bool strictEquals(const Value& lhs, const Value& rhs);
 
   // Relational comparison
   enum cmp_result { eq, lt, gt, undefined };
@@ -109,11 +93,21 @@ class Value {
   Value operator*(const Value& other);
   Value operator-() const;
 
-  static Value power(Value& other, const Value& rhs);
+  static Value power(Value& lhs, const Value& rhs);
 
-  String* ggStr() {
-    return static_cast<String*>(std::get<std::shared_ptr<Object>>(as).get());
+  // Hashing a value
+  size_t hash() const;
+
+  // For c++ hash maps.
+  virtual bool operator==(const Value& lhs) const {
+    return strictEquals(*this, lhs);
   }
+
+  struct ValueHasher {
+    size_t operator()(const Value& v) const noexcept {
+      return v.hash();  // defined in each value type class
+    }
+  };
 
  private:
   ValueType m_type;

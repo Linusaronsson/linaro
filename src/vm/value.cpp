@@ -136,21 +136,39 @@ Value Value::operator+(const Value& other) {
 
 #define bin_op(op) this->asNumber() op other.asNumber()
 
-Value Value::operator-(const Value& other) { return Value(bin_op(-)); }
+Value Value::operator-(const Value& other) {
+  if (isNoll() || other.isNoll()) {
+    return Value();  // Undefined
+  }
+  return Value(bin_op(-));
+}
 
-Value Value::operator/(const Value& other) { return Value(bin_op(/)); }
-
+Value Value::operator/(const Value& other) {
+  if (isNoll() || other.isNoll()) {
+    return Value();  // Undefined
+  }
+  return Value(bin_op(/));
+}
 // modulo not working for doubles? find out
 Value Value::operator%(const Value& other) {
+  if (isNoll() || other.isNoll()) {
+    return Value();  // Undefined
+  }
   return Value(fmod(this->asNumber(), other.asNumber()));
 }
 
-Value Value::operator*(const Value& other) { return Value(bin_op(*)); }
+Value Value::operator*(const Value& other) {
+  if (isNoll() || other.isNoll()) {
+    return Value();  // Undefined
+  }
+  return Value(bin_op(*));
+}
 
-Value Value::power(Value& other, const Value& rhs) {
-  // assert(other.AsNumber());
-  // assert(rhs.AsNumber());
-  return Value(pow(other.asNumber(), rhs.asNumber()));
+Value Value::power(Value& lhs, const Value& rhs) {
+  if (lhs.isNoll() || rhs.isNoll()) {
+    return Value();  // Undefined
+  }
+  return Value(pow(lhs.asNumber(), rhs.asNumber()));
 }
 
 bool Value::numberEquals(double x, double y) {
@@ -165,13 +183,10 @@ bool Value::numberEquals(const Value& lhs, const Value& rhs) {
 
 bool Value::stringEquals(const Value& lhs, const Value& rhs) {
   return lhs.asString() == rhs.asString();
-  // return static_cast<String*>(lhs.Obj().get())->Hash() ==
-  // static_cast<String*>(rhs.Obj().get())->Hash();
 }
 
 bool Value::equal(const Value& lhs, const Value& rhs) {
   ValueType temp = lhs.type();
-  if (lhs.type() != rhs.type()) return false;
   switch (temp) {
     case nNoll:
       return true;  // change?
@@ -179,6 +194,7 @@ bool Value::equal(const Value& lhs, const Value& rhs) {
     case nNumber:
       return numberEquals(lhs, rhs);
     case nString:
+    case nArray:
       return stringEquals(lhs, rhs);
     default:
       UNREACHABLE();
@@ -189,7 +205,8 @@ bool Value::equal(const Value& lhs, const Value& rhs) {
   return false;
 }
 
-bool Value::strictEqual(const Value& lhs, const Value& rhs) {
+bool Value::strictEquals(const Value& lhs, const Value& rhs) {
+  if (lhs.type() != rhs.type()) return false;
   return equal(lhs, rhs);
 }
 

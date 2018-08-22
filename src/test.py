@@ -1,1 +1,0 @@
-print(hash("asd-f")):

@@ -37,21 +37,23 @@ double String::asNumber() const {
 
 // Using this impl for now:
 size_t Array::hash() const {
-  std::size_t seed = m_values.size();
-  for (auto& i : m_values) {
-    seed ^= i.hash() + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+  size_t seed = m_values.size();
+  if (seed > 1) {
+    for (auto& i : m_values) {
+      seed ^= i.hash() + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
+    return seed;
   }
-  return seed;
+  return m_values[0].hash();
 }
 
 double Array::asNumber() const { return m_values[0].asNumber(); }
 bool Array::asBoolean() const { return m_values[0].asNumber(); }
 
-
 std::string Array::asString() const {
   std::string res;
   for (const auto& v : m_values) {
-    res = res + v.asString() + delimiter;
+    res = res + v.asString(); //+ delimiter;
   }
   return res;
 }

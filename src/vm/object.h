@@ -39,7 +39,7 @@ class String : public Object {
   size_t hash() const override { return std::hash<std::string>{}(m_str); }
 
  private:
-  std::string m_str;
+  const std::string m_str;
 };
 
 class Function : public Object {

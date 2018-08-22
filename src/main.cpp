@@ -5,6 +5,7 @@
 #include "compiler/chunk.h"
 #include "compiler/compiler.h"
 #include "linaro_utils/logging.h"
+#include "vm/constant_pool.h"
 #include "vm/value.h"
 #include "vm/vm.h"
 
@@ -12,28 +13,16 @@
 
 using namespace linaro;
 
-class test {
- public:
-  test(int p) { std::cout << "default constructor" << std::endl; }
-  test(const test& t) {
-    x = t.x;
-    std::cout << "copy constructor\n";
-  }
-  test(test&& t) {
-    x = t.x;
-    std::cout << "move constructor\n";
-  }
-  ~test() { std::cout << "destructor" << std::endl; }
-
- private:
-  int x;
-};
-
 int main() {
   //  uint64_t t1 = 0;
   clock_t begin = clock();
   std::cout << "Entered main..." << std::endl;
-  std::cout << "\n" << std::endl;
+  linaro::ConstantPool p;
+  for(int i = 0; i < 100000; i++) {
+    Value v = std::to_string(i).c_str();
+    p.addIfNew(v);
+  }
+  //p.printConstantPool();
   std::cout << "\n\n\n";
 
 #ifdef DEBUG_LEXER
