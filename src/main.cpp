@@ -16,13 +16,9 @@ using namespace linaro;
 int main() {
   //  uint64_t t1 = 0;
   clock_t begin = clock();
-  std::cout << "Entered main..." << std::endl;
-  linaro::ConstantPool p;
-  for(int i = 0; i < 100000; i++) {
-    Value v = std::to_string(i).c_str();
-    p.addIfNew(v);
-  }
   //p.printConstantPool();
+  Value a = true; 
+  std::cout << a.asNumber() << std::endl;
   std::cout << "\n\n\n";
 
 #ifdef DEBUG_LEXER

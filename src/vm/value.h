@@ -110,6 +110,11 @@ class Value {
   };
 
  private:
+// Convenience macros for getting a value out of the std::variant
+#define AS_NUMBER() (std::get<double>(as))
+#define AS_BOOL() (std::get<bool>(as))
+#define AS_OBJ() (std::get<std::shared_ptr<Object>>(as))
+
   ValueType m_type;
   std::variant<bool, double, std::shared_ptr<Object>> as;
 };

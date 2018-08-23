@@ -1,0 +1,11 @@
+When assigning numbers to a variable:
+
+Any number with a decimal point will become a double:
+var x = 3.14; // obvious double because of decimal point
+
+Any number without a decimal point and within the 64 bit integer range will
+be stored as an int64_t:
+var y = [-MAX_INT/2..MAX_INT/2]
+
+Anything else is also a double:
+var z = [MAX_INT/ < z < -MAX_INT/2]

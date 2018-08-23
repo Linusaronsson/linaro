@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <cassert>
+#include <sstream>
 
 #include "../linaro_utils/logging.h"
 #include "object.h"
@@ -15,10 +16,10 @@ namespace linaro {
 //   std::cout << "REACHED DEF CON";
 //   switch (other.m_type) {
 //     case nNumber:
-//       as = std::get<double>(other.as);
+//       as = AS_NUMBER()(other.as);
 //       break;
 //     case nBoolean:
-//       as = std::get<bool>(other.as);
+//       as = AS_BOOL()(other.as);
 //       break;
 //     case nNoll:
 //       return;
@@ -40,13 +41,13 @@ namespace linaro {
 size_t Value::hash() const {
   switch (m_type) {
     case nNumber:
-      return std::hash<double>{}(std::get<double>(as));
+      return std::hash<double>{}(AS_NUMBER());
     case nBoolean:
-      return std::hash<bool>{}(std::get<bool>(as));
+      return std::hash<bool>{}(AS_BOOL());
     case nNoll:
       return 0;  // ?
     default:
-      return std::get<std::shared_ptr<Object>>(as)->hash();
+      return AS_OBJ()->hash();
   }
   UNREACHABLE();
   return 0;
@@ -61,7 +62,7 @@ bool Value::canBeNumber() const {
       return false;
     default:
       // assert(std::holds_alternative<std::shared_ptr<Object>>(as));
-      return std::get<std::shared_ptr<Object>>(as)->canBeNumber();
+      return AS_OBJ()->canBeNumber();
   }
   UNREACHABLE();
   return false;
@@ -70,14 +71,14 @@ bool Value::canBeNumber() const {
 double Value::asNumber() const {
   switch (m_type) {
     case nNumber:
-      return std::get<double>(as);
+      return AS_NUMBER();
     case nBoolean:
-      return std::get<bool>(as);
+      return static_cast<double>(AS_BOOL());
     case nNoll:
       return 0.0;
     default:
       // assert(std::holds_alternative<std::shared_ptr<Object>>(as));
-      return std::get<std::shared_ptr<Object>>(as)->asNumber();
+      return AS_OBJ()->asNumber();
   }
   UNREACHABLE();
   return 0.0;
@@ -86,14 +87,14 @@ double Value::asNumber() const {
 bool Value::asBoolean() const {
   switch (m_type) {
     case nNumber:
-      return std::get<double>(as);
+      return static_cast<bool>(AS_NUMBER());
     case nBoolean:
-      return std::get<bool>(as);
+      return AS_BOOL();
     case nNoll:
       return false;
     default:
       // assert(std::holds_alternative<std::shared_ptr<Object>>(as));
-      return std::get<std::shared_ptr<Object>>(as)->asBoolean();
+      return AS_OBJ()->asBoolean();
   }
   UNREACHABLE();
   return false;
@@ -101,15 +102,18 @@ bool Value::asBoolean() const {
 
 std::string Value::asString() const {
   switch (m_type) {
-    case nNumber:
-      return std::to_string(std::get<double>(as));
+    case nNumber: {
+      std::ostringstream ss;
+      ss << AS_NUMBER();
+      return ss.str();
+    }
     case nBoolean:
-      return (std::get<bool>(as) ? "true" : "false");
+      return (AS_BOOL() ? "true" : "false");
     case nNoll:
       return "Undefined";
     default:
       // assert(std::holds_alternative<std::shared_ptr<Object>>(as));
-      return std::get<std::shared_ptr<Object>>(as)->asString();
+      return AS_OBJ()->asString();
   }
   UNREACHABLE();
   return nullptr;
@@ -172,8 +176,7 @@ Value Value::power(Value& lhs, const Value& rhs) {
 }
 
 bool Value::numberEquals(double x, double y) {
-  if (isnan(x)) return false;
-  if (isnan(y)) return false;
+  if (isnan(x) || isnan(y)) return false;
   return x == y;
 }
 
