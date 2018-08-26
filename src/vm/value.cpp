@@ -4,7 +4,7 @@
 #include <cassert>
 #include <sstream>
 
-#include "../linaro_utils/logging.h"
+#include "../linaro_utils/common.h"
 #include "object.h"
 
 namespace linaro {
@@ -126,11 +126,13 @@ Value Value::operator-() const {
   return Value();
 }
 
-Value Value::operator+(const Value& other) {
-  if (isNoll() || other.isNoll()) {
-    return Value();  // Undefined
+#define CHECK_FOR_NULL_VAL()        \
+  if (isNoll() || other.isNoll()) { \
+    return Value();                 \
   }
 
+Value Value::operator+(const Value& other) {
+  CHECK_FOR_NULL_VAL()
   if (canBeNumber() && other.canBeNumber() && !isString() &&
       !other.isString()) {
     return Value(asString() + other.asString());
@@ -141,30 +143,22 @@ Value Value::operator+(const Value& other) {
 #define bin_op(op) this->asNumber() op other.asNumber()
 
 Value Value::operator-(const Value& other) {
-  if (isNoll() || other.isNoll()) {
-    return Value();  // Undefined
-  }
+  CHECK_FOR_NULL_VAL()
   return Value(bin_op(-));
 }
 
 Value Value::operator/(const Value& other) {
-  if (isNoll() || other.isNoll()) {
-    return Value();  // Undefined
-  }
+  CHECK_FOR_NULL_VAL()
   return Value(bin_op(/));
 }
 // modulo not working for doubles? find out
 Value Value::operator%(const Value& other) {
-  if (isNoll() || other.isNoll()) {
-    return Value();  // Undefined
-  }
+  CHECK_FOR_NULL_VAL()
   return Value(fmod(this->asNumber(), other.asNumber()));
 }
 
 Value Value::operator*(const Value& other) {
-  if (isNoll() || other.isNoll()) {
-    return Value();  // Undefined
-  }
+  CHECK_FOR_NULL_VAL()
   return Value(bin_op(*));
 }
 
@@ -176,7 +170,7 @@ Value Value::power(Value& lhs, const Value& rhs) {
 }
 
 bool Value::numberEquals(double x, double y) {
-  if (isnan(x) || isnan(y)) return false;
+  if (std::isnan(x) || std::isnan(y)) return false;
   return x == y;
 }
 
@@ -196,8 +190,7 @@ bool Value::equal(const Value& lhs, const Value& rhs) {
     case nBoolean:
     case nNumber:
       return numberEquals(lhs, rhs);
-    case nString:
-    case nArray:
+    case nObject:
       return stringEquals(lhs, rhs);
     default:
       UNREACHABLE();

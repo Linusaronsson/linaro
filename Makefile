@@ -231,33 +231,6 @@ src/compiler/scope.cpp.s:
 	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/compiler/scope.cpp.s
 .PHONY : src/compiler/scope.cpp.s
 
-src/compiler/symbol_table.o: src/compiler/symbol_table.cpp.o
-
-.PHONY : src/compiler/symbol_table.o
-
-# target to build an object file
-src/compiler/symbol_table.cpp.o:
-	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/compiler/symbol_table.cpp.o
-.PHONY : src/compiler/symbol_table.cpp.o
-
-src/compiler/symbol_table.i: src/compiler/symbol_table.cpp.i
-
-.PHONY : src/compiler/symbol_table.i
-
-# target to preprocess a source file
-src/compiler/symbol_table.cpp.i:
-	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/compiler/symbol_table.cpp.i
-.PHONY : src/compiler/symbol_table.cpp.i
-
-src/compiler/symbol_table.s: src/compiler/symbol_table.cpp.s
-
-.PHONY : src/compiler/symbol_table.s
-
-# target to generate assembly for a file
-src/compiler/symbol_table.cpp.s:
-	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/compiler/symbol_table.cpp.s
-.PHONY : src/compiler/symbol_table.cpp.s
-
 src/main.o: src/main.cpp.o
 
 .PHONY : src/main.o
@@ -365,33 +338,6 @@ src/parsing/token.s: src/parsing/token.cpp.s
 src/parsing/token.cpp.s:
 	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/parsing/token.cpp.s
 .PHONY : src/parsing/token.cpp.s
-
-src/vm/constant_pool.o: src/vm/constant_pool.cpp.o
-
-.PHONY : src/vm/constant_pool.o
-
-# target to build an object file
-src/vm/constant_pool.cpp.o:
-	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/vm/constant_pool.cpp.o
-.PHONY : src/vm/constant_pool.cpp.o
-
-src/vm/constant_pool.i: src/vm/constant_pool.cpp.i
-
-.PHONY : src/vm/constant_pool.i
-
-# target to preprocess a source file
-src/vm/constant_pool.cpp.i:
-	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/vm/constant_pool.cpp.i
-.PHONY : src/vm/constant_pool.cpp.i
-
-src/vm/constant_pool.s: src/vm/constant_pool.cpp.s
-
-.PHONY : src/vm/constant_pool.s
-
-# target to generate assembly for a file
-src/vm/constant_pool.cpp.s:
-	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/vm/constant_pool.cpp.s
-.PHONY : src/vm/constant_pool.cpp.s
 
 src/vm/object.o: src/vm/object.cpp.o
 
@@ -522,9 +468,6 @@ help:
 	@echo "... src/compiler/scope.o"
 	@echo "... src/compiler/scope.i"
 	@echo "... src/compiler/scope.s"
-	@echo "... src/compiler/symbol_table.o"
-	@echo "... src/compiler/symbol_table.i"
-	@echo "... src/compiler/symbol_table.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
@@ -537,9 +480,6 @@ help:
 	@echo "... src/parsing/token.o"
 	@echo "... src/parsing/token.i"
 	@echo "... src/parsing/token.s"
-	@echo "... src/vm/constant_pool.o"
-	@echo "... src/vm/constant_pool.i"
-	@echo "... src/vm/constant_pool.s"
 	@echo "... src/vm/object.o"
 	@echo "... src/vm/object.i"
 	@echo "... src/vm/object.s"

@@ -1,5 +1,7 @@
 #include "object.h"
 
+#include <iostream>
+
 #include "value.h"
 
 namespace linaro {
@@ -29,6 +31,13 @@ double String::asNumber() const {
 }
 
 /* Function */
+
+void Function::printConstants() const {
+  std::cout << "Constant pool:\n";
+  for (size_t i = 0; i < m_constants.size(); i++) {
+    std::cout << i << ": " << m_constants[i] << '\n';
+  }
+}
 
 /* Array */
 

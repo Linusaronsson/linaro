@@ -4,23 +4,15 @@
 
 #include "compiler/chunk.h"
 #include "compiler/compiler.h"
-#include "linaro_utils/logging.h"
-#include "vm/constant_pool.h"
 #include "vm/value.h"
-#include "vm/vm.h"
+#include "linaro_utils/common.h"
 
 #define DEBUG_VM
-
 using namespace linaro;
 
 int main() {
   //  uint64_t t1 = 0;
   clock_t begin = clock();
-  //p.printConstantPool();
-  Value a = true; 
-  std::cout << a.asNumber() << std::endl;
-  std::cout << "\n\n\n";
-
 #ifdef DEBUG_LEXER
   // Lexer debug code here
 #endif

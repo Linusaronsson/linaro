@@ -4,4 +4,4 @@ project (linaro)
 file(GLOB SOURCES "src/compiler/*.cpp" "src/linaro_utils/*.cpp" "src/parsing/*.cpp"
     "src/vm/*.cpp" "src/*.cpp")
 add_executable(linaro ${SOURCES})
-target_compile_options(linaro PUBLIC -std=c++17 -pedantic -Wall -Wfloat-conversion)
+target_compile_options(linaro PUBLIC -DDEBUG -std=c++17 -pedantic -Wall -Wfloat-conversion)

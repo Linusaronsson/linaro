@@ -1,47 +1,32 @@
-import dis
+For strings :
 
-def read_file():
-    print(abs(-12.3))
-    
-dis.dis(read_file)
+    All identical strings point to the same string in the const pool.If a string
+        is changed,
+    copy - on -
+        write will take affect and simply create
+            a new instance of this string in the const pool(using addNew(...))
+                .This means that
+        if a another string changes into the same thing they will again point to
+        the same string in the const pool.(Maybe good, might be bad)
 
-COMPILES TO THIS BYTECODE:
-  
-  4           0 LOAD_GLOBAL              0 (print)
-              2 LOAD_GLOBAL              1 (abs)
-              4 LOAD_CONST               1 (-12.3)
-              6 CALL_FUNCTION            1
-              8 CALL_FUNCTION            1
-             10 POP_TOP
-             12 LOAD_CONST               0 (None)
-             14 RETURN_VALUE
+            For values and how to refer to them etc :
 
+    I think the best way is to just store them in c
+    ++ standard collections like std::vector,
+    std::stack, std::array,
+    std::unordered_map etc
+        .This means these collections deal with the memory allocations etc
+        .
 
------------------------------------------------------------------
+    E.g : (vector can be any std::collection)
 
-For strings:
+              std::vector<Value> values;
 
-All identical strings point to the same string in the const pool. If a string
-is changed, copy-on-write will take affect and simply create a new instance of
-this string in the const pool (using addNew(...)). This means that if a another
-string changes into the same thing they will again point to the same string in
-the const pool. (Maybe good, might be bad)
+Where the basic structure of a value will be this :
 
-For values and how to refer to them etc:
-
-I think the best way is to just store them in c++ standard collections like
-std::vector, std::stack, std::array, std::unordered_map etc. This means these
-collections deal with the memory allocations etc.
-
-E.g: (vector can be any std:: collection)
-
-std::vector<Value> values;
-
-Where the basic structure of a value will be this:
-
-class Value {
-    ValueType type;
-    std::unique_ptr<Object> obj;
+    class Value {
+  ValueType type;
+  std::unique_ptr<Object> obj;
 };
 
 where Object is the interface for all Linaro value types.
@@ -66,5 +51,178 @@ for the same constant twice.
 idea: keep counter of how many times a function is called in program. THen
 check this variable at runtime every now and then, if it is 0 it will not be
 used again so deallocate it.
+
+
+-----------------------------
+
+
+Closures (example):
+
+function outer(dummy) {
+  var x = 10;
+  print x;  // 10
+  function inner1() {
+    print x;
+    x = 1337
+  }
+
+  function inner2() { print x; }
+  x = 100;
+  var p = { inner1, inner2 }
+}
+
+var t = outer();
+t[0]();  // calls inner1 and prints 10, then changes x to 1337
+t[1]();  // calls inner2 and prints 1337. So inner1 and inner2 refer to the same
+variable x eventhough it is no longer on the CallStack after outer() finished.
+
+This is how that works:
+
+The following functions are compiled with the following information (there is
+of course other information in a function object, but that is left out because it's
+not relevant for this purpose):
+
+outer():
+   num_locals: 2 (x and dummy)
+   num_args: 1 (dummy)
+   num_captured_variables: 0
+
+inner1():
+    num_locals: 0
+    num_args: 0
+    num_captured_variables: 1 (x)
+
+inner2():
+    num_locals: 0
+    num_args: 0
+    num_captured_variables: 1 (x)
+
+
+--
+
+A general description of how variables are resolved from compile time to
+runtime:
+
+Let's say we have a function called inner() defined at depth 'n'. This function
+is is in turn enclosed by a function at depth n-1. The top level code is of
+course at depth 0. Note that depth refers to function depth, not scope depth.
+Local scopes for e.g if-statements are irrelevant here.
+
+The function inner() looks like this:
+
+function inner() {
+    ...
+    print x
+    ...
+}
+
+When trying to resolve 'x' there are three things that could happen
+which depends on the depth that 'x' was found:
+
+depth n:
+
+This means it was a local variable declared inside of inner1().
+This will lead to num_locals being incremented. Num locals
+defines how large the Local Variable Space will be for this function
+in the stackframe at runtime. The variable is then accessed using the
+'load x' bytecode, where 'x' is the index into the variable space.
+
+depth n-1:
+
+This means that the variable was in the closest enclosing function which
+is responsible for creating the closure for inner() at runtime using the
+'closure x' bytecode, where 'x' is an index in the const pool pointing to a function
+object. The created closure will then point to this function. The reason it
+needs the function pointer is because the function contains crucial information
+that is needed when the closure is to be executed, like the code and constants
+etc.
+
+The second element stored in the closure is the array of captured variables
+from enclosing functions. A 'Captured Variable' can be one of two things:
+
+    1. It's a pointer to an existing Value in the Local Variable Space of the
+    enclosing function that originally declared this variable. This means that
+    this function must still be executing because the Local Variable Space
+    lives in the call stack.
+
+    2. The second case is if the function inner() was invoked after the outer
+    function that cointains the variable had finished executing, and is
+    therefore no longer on the call stack. The captured variable will now store
+    a local copy of it, and the pointer will be changed to this copy instead.
+
+
+depth <n-1:
+
+This means that the variable was resolved to a scope outside of the enclosing
+function. In this case, during the 'closure x' bytecode, the upvalues will be 
+initialized to the enclosing function because the enclosing function has
+already added this upvalue to it's list of upvalues.
+
+E.g. if you have this:
+
+function outer() {
+    var x = 3
+    function inner1() {
+        function inner2() {
+            print x
+        }
+    }
+
+}
+
+
+Notice how inner1 does not refer to x, so it will initally not add 'x' as an
+upvalue in its upvalues. But when inner2() refers to 'x' it will add it as an 
+upvalue in inner1 AS WELL AS inner2. So basically it adds the variable 'x' to 
+the list of upvalues to all enclosing functions that didn't already refer to
+it.
+
+
+
+
+
+Compile time:
+
+Runtime:
+
+
+
+
+----------------------
+
+function compiling:
+
+named functions are compiled before other statements
+anonymous functions like var x = function() {}
+are compiled like any other statement
+    .
+
+    another note : named functions and anonymous ones are treated identically
+    .
+
+                   e.g : "function test() {}" is equivalent to
+                         "var test = function() {}" As in,
+    test is just a variable regardless.
+
+-----------------------------------
+
+There will be 1 compiler per function:
+
+Main will rougly look like this:
+
+Lexer lex(source);
+Parser p(lex);
+AST tree = p.parse();
+Compiler main;
+Closure c = main.compile(tree); // main function. A new Compiler is made for
+every function that is compiled, 'compile()' is then called recursively on that
+new compiler object.
+
+VM vm;
+vm.interpret(c);
+
+Note that it will likely not look like that but u get the point.
+It will probably only be a VM that constructs all the other parts
+internally.
 
 

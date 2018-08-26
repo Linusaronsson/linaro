@@ -2,7 +2,6 @@
 #define VM_INSTANCE_H
 
 #include "../compiler/chunk.h"
-#include "constant_pool.h"
 #include "value.h"
 
 namespace linaro {
@@ -15,10 +14,9 @@ namespace linaro {
  */
 class VMContext {
  public:
-  VMContext(int num_globals, const ConstantPool& const_pool,
+  VMContext(int num_globals,
             const BytecodeChunk& main_code)
       : m_num_globals(num_globals),
-        m_const_pool(const_pool),
         m_main_code(main_code) {}
 
   ~VMContext() {}
@@ -27,12 +25,10 @@ class VMContext {
   void serialize(const char* filename);
 
   const BytecodeChunk& main_code() { return m_main_code; }
-  const ConstantPool& const_pool() { return m_const_pool; }
   int global_space() { return m_num_globals; }
 
  private:
   int m_num_globals;
-  ConstantPool m_const_pool;
   BytecodeChunk m_main_code;
 };
 
