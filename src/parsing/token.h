@@ -3,6 +3,7 @@
 
 #include <ostream>
 #include <string>
+#include <string_view>
 
 #include "../linaro_utils/common.h"
 #include "../vm/value.h"
@@ -112,21 +113,20 @@ class Token {
 #undef T
 
   Token() {}
-  Token(TokenType type, const Value& val);
-  Token(TokenType type, const Location& location, const Value& val);
-  // Token(TokenType type, const Location& location, const std::string& name);
+  Token(TokenType type, const std::string_view& str)
+      : m_type{type}, m_str{str} {}
+  Token(TokenType type, const Location& location, const std::string_view& str)
+      : m_type{type}, m_location{location}, m_str{str} {}
 
   ~Token() {}
 
   TokenType type() const { return m_type; }
-  const Value& getValue() const { return m_val; }
   const Location& getLocation() const { return m_location; }
-
-  void setValue(Value& val) { m_val = val; }
+  std::string_view& getString() { return m_str; }
 
   void setLocation(const Location& loc) { m_location = loc; }
-  void setColumn(int col) { m_location.column = col; }
-  void setLineNumber(int line) { m_location.line_number = line; }
+  void setColumn(int col) { m_location.col = col; }
+  void setLineNumber(int line) { m_location.line = line; }
   void setHadNewlineBefore(bool b) { had_newline_before = b; }
   bool hadNewlineBefore() const { return had_newline_before; }
 
@@ -135,8 +135,8 @@ class Token {
     return token_to_string[type];
   }
 
-  static int precedence(TokenType type) {
-    CHECK(type < NUM_TOKENS);  // tok is unsigned.
+  static int getPrecedence(TokenType type) {
+    CHECK(type < NUM_TOKENS);
     return precedence[type];
   }
 
@@ -152,15 +152,14 @@ class Token {
 
   static bool isCountOp(TokenType op) { return op == INCR || op == DECR; }
   static bool isAssignOp(TokenType type) { return type == ASSIGN; }
-  std::ostream& operator<<(std::ostream& cout, const Token& tok);
+  friend std::ostream& operator<<(std::ostream& cout, const Token& tok);
 
  private:
   TokenType m_type;
   Location m_location;
-  // std::string m_name; non-literals should just be strings in future
-  // to avoid unecessary heap allocations.
-  Value m_val;
-  // true if token had atleast 1 '\n' before it.
+  // String view of the token, points straight into source code
+  std::string_view m_str;
+  // True if token had atleast 1 '\n' before it.
   bool had_newline_before;
 };
 }  // Namespace linaro

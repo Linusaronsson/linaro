@@ -225,4 +225,10 @@ Note that it will likely not look like that but u get the point.
 It will probably only be a VM that constructs all the other parts
 internally.
 
+----------------------------------------
+parsing idea:
+
+When "function" keyword token is found in parser, the parser will skip ahead
+and find the entire source of the function. This will then be stored in the AST 
+node of the function as a std::string_view
 

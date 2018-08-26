@@ -1,36 +1,45 @@
-#include <cassert>
 #include <ctime>
 #include <iostream>
+#include <string_view>
 
-#include "compiler/chunk.h"
-#include "compiler/compiler.h"
-#include "vm/value.h"
+#include "code_generator/chunk.h"
+#include "code_generator/code_generator.h"
 #include "linaro_utils/common.h"
+#include "linaro_utils/utils.h"
+#include "parsing/lexer.h"
+#include "parsing/token.h"
+#include "vm/value.h"
 
-#define DEBUG_VM
+#define DEBUG_LEXER
 using namespace linaro;
 
 int main() {
   //  uint64_t t1 = 0;
   clock_t begin = clock();
 #ifdef DEBUG_LEXER
-  // Lexer debug code here
+  Lexer lex("script.lo");
+  Token t = lex.nextToken();
+  while (t.type() != Token::END) {
+    std::cout << t << std::endl;
+    t = lex.nextToken();
+  }
+    // Lexer debug code here
 #endif
 
 #ifdef DEBUG_PARSER
-  // Parser debug code here
+    // Parser debug code here
 #endif
 
 #ifdef DEBUG_CODE_GENERATOR
-  // Code generation debug code here
+    // Code generation debug code here
 #endif
 
 #ifdef DEBUG_VM
-  // VM debug code here
+    // VM debug code here
 #endif
 
-  clock_t end = clock();
-  std::cout << "Execution time: " << double(end - begin) / CLOCKS_PER_SEC
-            << "\n";
-  return 0;
-}
+    clock_t end = clock();
+    std::cout << "Execution time: " << double(end - begin) / CLOCKS_PER_SEC
+              << "\n";
+    return 0;
+  }

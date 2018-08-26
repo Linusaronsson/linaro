@@ -1,8 +1,8 @@
-#include "compiler.h"
+#include "code_generator.h"
 
 namespace linaro {
 
-int Compiler::addConstantIfNew(const Value& val) {
+int CodeGenerator::addConstantIfNew(const Value& val) {
   auto it = constant_pool.find(val);
   if (it == constant_pool.end()) {
     // Add it to function's constants, which returns the index it was
@@ -16,21 +16,21 @@ int Compiler::addConstantIfNew(const Value& val) {
   return it->second;
 }
 
-void Compiler::semanticError(const Location& loc, const char* format, ...) {
+void CodeGenerator::semanticError(const Location& loc, const char* format, ...) {
   va_list args;
   va_start(args, format);
   Error::reportErrorAt(loc, Error::RuntimeError, format, args);
   va_end(args);
 }
 
-int Compiler::defineSymbol(const Symbol& sym, const Location& loc) {
+int CodeGenerator::defineSymbol(const Symbol& sym, const Location& loc) {
   int res = current_scope->defineSymbol(sym);
   if (res == -1) {
     semanticError(loc, "Identifier already taken: '%s'", sym.name().c_str());
   }
   return 0;
 }
-Symbol* Compiler::resolveSymbol(std::string name) const {
+Symbol* CodeGenerator::resolveSymbol(std::string name) const {
   Symbol* arg = current_scope->resolveSymbol(name);
 
     // Symbol didn't exist in current function, check enclosing function.

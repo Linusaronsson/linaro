@@ -123,113 +123,32 @@ linaro/fast:
 	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/build
 .PHONY : linaro/fast
 
-src/compiler/chunk.o: src/compiler/chunk.cpp.o
+src/linaro_utils/utils.o: src/linaro_utils/utils.cpp.o
 
-.PHONY : src/compiler/chunk.o
-
-# target to build an object file
-src/compiler/chunk.cpp.o:
-	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/compiler/chunk.cpp.o
-.PHONY : src/compiler/chunk.cpp.o
-
-src/compiler/chunk.i: src/compiler/chunk.cpp.i
-
-.PHONY : src/compiler/chunk.i
-
-# target to preprocess a source file
-src/compiler/chunk.cpp.i:
-	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/compiler/chunk.cpp.i
-.PHONY : src/compiler/chunk.cpp.i
-
-src/compiler/chunk.s: src/compiler/chunk.cpp.s
-
-.PHONY : src/compiler/chunk.s
-
-# target to generate assembly for a file
-src/compiler/chunk.cpp.s:
-	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/compiler/chunk.cpp.s
-.PHONY : src/compiler/chunk.cpp.s
-
-src/compiler/compiler.o: src/compiler/compiler.cpp.o
-
-.PHONY : src/compiler/compiler.o
+.PHONY : src/linaro_utils/utils.o
 
 # target to build an object file
-src/compiler/compiler.cpp.o:
-	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/compiler/compiler.cpp.o
-.PHONY : src/compiler/compiler.cpp.o
+src/linaro_utils/utils.cpp.o:
+	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/linaro_utils/utils.cpp.o
+.PHONY : src/linaro_utils/utils.cpp.o
 
-src/compiler/compiler.i: src/compiler/compiler.cpp.i
+src/linaro_utils/utils.i: src/linaro_utils/utils.cpp.i
 
-.PHONY : src/compiler/compiler.i
-
-# target to preprocess a source file
-src/compiler/compiler.cpp.i:
-	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/compiler/compiler.cpp.i
-.PHONY : src/compiler/compiler.cpp.i
-
-src/compiler/compiler.s: src/compiler/compiler.cpp.s
-
-.PHONY : src/compiler/compiler.s
-
-# target to generate assembly for a file
-src/compiler/compiler.cpp.s:
-	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/compiler/compiler.cpp.s
-.PHONY : src/compiler/compiler.cpp.s
-
-src/compiler/label.o: src/compiler/label.cpp.o
-
-.PHONY : src/compiler/label.o
-
-# target to build an object file
-src/compiler/label.cpp.o:
-	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/compiler/label.cpp.o
-.PHONY : src/compiler/label.cpp.o
-
-src/compiler/label.i: src/compiler/label.cpp.i
-
-.PHONY : src/compiler/label.i
+.PHONY : src/linaro_utils/utils.i
 
 # target to preprocess a source file
-src/compiler/label.cpp.i:
-	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/compiler/label.cpp.i
-.PHONY : src/compiler/label.cpp.i
+src/linaro_utils/utils.cpp.i:
+	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/linaro_utils/utils.cpp.i
+.PHONY : src/linaro_utils/utils.cpp.i
 
-src/compiler/label.s: src/compiler/label.cpp.s
+src/linaro_utils/utils.s: src/linaro_utils/utils.cpp.s
 
-.PHONY : src/compiler/label.s
-
-# target to generate assembly for a file
-src/compiler/label.cpp.s:
-	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/compiler/label.cpp.s
-.PHONY : src/compiler/label.cpp.s
-
-src/compiler/scope.o: src/compiler/scope.cpp.o
-
-.PHONY : src/compiler/scope.o
-
-# target to build an object file
-src/compiler/scope.cpp.o:
-	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/compiler/scope.cpp.o
-.PHONY : src/compiler/scope.cpp.o
-
-src/compiler/scope.i: src/compiler/scope.cpp.i
-
-.PHONY : src/compiler/scope.i
-
-# target to preprocess a source file
-src/compiler/scope.cpp.i:
-	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/compiler/scope.cpp.i
-.PHONY : src/compiler/scope.cpp.i
-
-src/compiler/scope.s: src/compiler/scope.cpp.s
-
-.PHONY : src/compiler/scope.s
+.PHONY : src/linaro_utils/utils.s
 
 # target to generate assembly for a file
-src/compiler/scope.cpp.s:
-	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/compiler/scope.cpp.s
-.PHONY : src/compiler/scope.cpp.s
+src/linaro_utils/utils.cpp.s:
+	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/linaro_utils/utils.cpp.s
+.PHONY : src/linaro_utils/utils.cpp.s
 
 src/main.o: src/main.cpp.o
 
@@ -456,18 +375,9 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... linaro"
 	@echo "... edit_cache"
-	@echo "... src/compiler/chunk.o"
-	@echo "... src/compiler/chunk.i"
-	@echo "... src/compiler/chunk.s"
-	@echo "... src/compiler/compiler.o"
-	@echo "... src/compiler/compiler.i"
-	@echo "... src/compiler/compiler.s"
-	@echo "... src/compiler/label.o"
-	@echo "... src/compiler/label.i"
-	@echo "... src/compiler/label.s"
-	@echo "... src/compiler/scope.o"
-	@echo "... src/compiler/scope.i"
-	@echo "... src/compiler/scope.s"
+	@echo "... src/linaro_utils/utils.o"
+	@echo "... src/linaro_utils/utils.i"
+	@echo "... src/linaro_utils/utils.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"

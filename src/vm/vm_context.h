@@ -1,7 +1,7 @@
 #ifndef VM_INSTANCE_H
 #define VM_INSTANCE_H
 
-#include "../compiler/chunk.h"
+#include "../code_generator/chunk.h"
 #include "value.h"
 
 namespace linaro {

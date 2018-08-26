@@ -4,18 +4,19 @@
 #include <unordered_map>
 
 #include "../linaro_utils/utils.h"
+#include "../parsing/parser.h"
 #include "../vm/object.h"
 #include "../vm/value.h"
+#include "chunk.h"
 #include "scope.h"
-
 
 namespace linaro {
 
-class Compiler {
+class CodeGenerator {
  public:
-  Compiler(Compiler* enclosing_compiler = nullptr)
+  CodeGenerator(CodeGenerator* enclosing_compiler = nullptr)
       : m_enclosing_compiler{enclosing_compiler} {}
-  ~Compiler() {}
+  ~CodeGenerator() {}
 
   // Compiles top-level code. Calls compileFunction for every
   // nested function it encounters. This creates a new child
@@ -26,6 +27,8 @@ class Compiler {
   std::unique_ptr<Function> compile(std::string source, const char* filename);
 
  private:
+  class Parser;
+
   // The function compiled will live in the constant pool of the
   // enclosing function, returns a pointer to that.
   // Consider: what param should be passed? AST or source of function.
@@ -78,8 +81,9 @@ class Compiler {
   // Gets chunk of function being compiled.
   BytecodeChunk* code() { return m_fn->code(); }
 
-  // Compiler for enclosing function. 'nullptr' if top-level.
-  Compiler* m_enclosing_compiler;
+  // CodeGenerator for enclosing function. 'nullptr' if top-level.
+  CodeGenerator* m_enclosing_compiler;
+  Parser* m_parser;
 
   // Function being compiled. Added to constants of enclosing
   // functions.

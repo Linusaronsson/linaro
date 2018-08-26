@@ -1,6 +1,6 @@
 #include "vm.h"
 
-#include "../compiler/compiler.h"
+#include "../code_generator/code_generator.h"
 #include "../linaro_utils/utils.h"
 #include "value.h"
 

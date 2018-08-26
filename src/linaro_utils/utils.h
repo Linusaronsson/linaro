@@ -6,6 +6,7 @@
 
 #include <cstdarg>
 #include <fstream>
+#include <sstream>
 
 #include "../parsing/token.h"
 #include "common.h"

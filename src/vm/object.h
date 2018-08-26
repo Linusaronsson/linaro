@@ -3,7 +3,7 @@
 
 #include <memory>
 
-#include "../compiler/chunk.h"
+#include "../code_generator/chunk.h"
 
 namespace linaro {
 

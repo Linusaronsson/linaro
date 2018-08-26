@@ -5,9 +5,9 @@
 #include <cstdint>
 #include <vector>
 
-#include "../parsing/token.h"
-
 namespace linaro {
+
+class Location;
 
 #define BYTECODE(name) name,
 enum class Bytecode : uint8_t {
@@ -26,7 +26,7 @@ class BytecodeChunk {
  public:
   BytecodeChunk() {}
   const std::vector<uint8_t>& code() { return m_code; }
-  const Location& getLocation(int i) { return m_loc[i]; }
+  const Location& getLocation(int i) { return *m_loc[i]; }
   size_t chunkSize() const { return m_code.size(); }
   size_t currentOffset() const { return m_code.size() + 1; }
 
@@ -63,7 +63,7 @@ class BytecodeChunk {
   std::vector<uint8_t> m_code;  // the code
   // Each bytecode is associated with a location in the source file.
   // This is used for reporting potential errors at runtime.
-  std::vector<Location> m_loc;
+  std::vector<Location*> m_loc;
 };
 
 }  // Namespace linaro
