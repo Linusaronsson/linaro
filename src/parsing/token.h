@@ -78,11 +78,11 @@ namespace linaro {
   K(NOLL, "null", 0)                            \
   K(TRUE, "true", 0)                            \
   K(FALSE, "false", 0)                          \
-  T(NUMBER, NULL, 0)                            \
-  T(STRING, NULL, 0)                            \
+  T(NUMBER, nullptr, 0)                         \
+  T(STRING, nullptr, 0)                         \
                                                 \
   /* Identifiers (not keywords). */             \
-  T(SYMBOL, NULL, 0)
+  T(SYMBOL, nullptr, 0)
 
 struct Location {
   friend std::ostream& operator<<(std::ostream& s, const Location& loc) {
@@ -102,19 +102,11 @@ class Token {
   enum TokenType { TOKEN_LIST(T, T, T) NUM_TOKENS };
 #undef T
 
-// String representation of TOKEN_LIST
-#define T(type, name, precedence) #type,
-  constexpr static const char* const token_to_string[NUM_TOKENS]{
-      TOKEN_LIST(T, T, T)};
-#undef T
-
-#define T(name, string, precedence) precedence,
-  constexpr static const int8_t precedence[NUM_TOKENS]{TOKEN_LIST(T, T, T)};
-#undef T
-
   Token() {}
-  Token(TokenType type, const std::string_view& str)
-      : m_type{type}, m_str{str} {}
+  // The rest, no value representation, printed using "tokenString()"
+  Token(TokenType type, const Location& location)
+      : m_type{type}, m_location{location} {}
+  // For string literals, symbols and numbers.
   Token(TokenType type, const Location& location, const std::string_view& str)
       : m_type{type}, m_location{location}, m_str{str} {}
 
@@ -122,7 +114,6 @@ class Token {
 
   TokenType type() const { return m_type; }
   const Location& getLocation() const { return m_location; }
-  std::string_view& getString() { return m_str; }
 
   void setLocation(const Location& loc) { m_location = loc; }
   void setColumn(int col) { m_location.col = col; }
@@ -130,10 +121,19 @@ class Token {
   void setHadNewlineBefore(bool b) { had_newline_before = b; }
   bool hadNewlineBefore() const { return had_newline_before; }
 
+  // E.g token LPAREN becomes the strin "LPAREN"
+  static const char* tokenName(TokenType type) {
+    CHECK(type < NUM_TOKENS);
+    return token_name[type];
+  }
+
+  // E.g token LPAREN becomes "("
   static const char* tokenString(TokenType type) {
     CHECK(type < NUM_TOKENS);
-    return token_to_string[type];
+    return token_string[type];
   }
+
+  std::string_view asString() const;
 
   static int getPrecedence(TokenType type) {
     CHECK(type < NUM_TOKENS);
@@ -155,10 +155,26 @@ class Token {
   friend std::ostream& operator<<(std::ostream& cout, const Token& tok);
 
  private:
+#define T(type, name, precedence) #type,
+  constexpr static const char* const token_name[NUM_TOKENS]{
+      TOKEN_LIST(T, T, T)};
+#undef T
+
+#define T(type, name, precedence) #name,
+  constexpr static const char* const token_string[NUM_TOKENS]{
+      TOKEN_LIST(T, T, T)};
+#undef T
+
+#define T(name, string, precedence) precedence,
+  constexpr static const int8_t precedence[NUM_TOKENS]{TOKEN_LIST(T, T, T)};
+#undef T
+
   TokenType m_type;
   Location m_location;
-  // String view of the token, points straight into source code
+  // String view of strings, symbols and numbers. Points straight into source
+  // code.
   std::string_view m_str;
+
   // True if token had atleast 1 '\n' before it.
   bool had_newline_before;
 };

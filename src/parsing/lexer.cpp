@@ -174,7 +174,7 @@ Token Lexer::getNextToken() {
   }
 
   // Reached end of source file, return EOF token.
-  return constructToken(Token::END, "EOF");
+  return constructToken(Token::END);
 }
 
 void Lexer::advance(unsigned int steps) {
@@ -209,32 +209,31 @@ Token Lexer::identifier() {
   std::string_view result{cursor, offsetFromCursor()};
 
   // If it's a reserved keyword:
-  if (result == "if") return constructToken(Token::IF, result);
-  if (result == "else") return constructToken(Token::ELSE, result);
-  if (result == "for") return constructToken(Token::FOR, result);
-  if (result == "while") return constructToken(Token::WHILE, result);
-  if (result == "print") return constructToken(Token::PRINT, result);
-  if (result == "function") return constructToken(Token::FUNCTION, result);
-  if (result == "return") return constructToken(Token::RETURN, result);
-  if (result == "and") return constructToken(Token::AND, result);
-  if (result == "or") return constructToken(Token::OR, result);
-  if (result == "class") return constructToken(Token::CLASS, result);
-  if (result == "method") return constructToken(Token::METHOD, result);
-  if (result == "field") return constructToken(Token::FIELD, result);
-  if (result == "constructor")
-    return constructToken(Token::CONSTRUCTOR, result);
-  if (result == "inherits") return constructToken(Token::INHERITS, result);
-  if (result == "new") return constructToken(Token::NEW, result);
-  if (result == "this") return constructToken(Token::THIS, result);
-  if (result == "super") return constructToken(Token::SUPER, result);
+  if (result == "if") return constructToken(Token::IF);
+  if (result == "else") return constructToken(Token::ELSE);
+  if (result == "for") return constructToken(Token::FOR);
+  if (result == "while") return constructToken(Token::WHILE);
+  if (result == "print") return constructToken(Token::PRINT);
+  if (result == "function") return constructToken(Token::FUNCTION);
+  if (result == "return") return constructToken(Token::RETURN);
+  if (result == "and") return constructToken(Token::AND);
+  if (result == "or") return constructToken(Token::OR);
+  if (result == "class") return constructToken(Token::CLASS);
+  if (result == "method") return constructToken(Token::METHOD);
+  if (result == "field") return constructToken(Token::FIELD);
+  if (result == "constructor") return constructToken(Token::CONSTRUCTOR);
+  if (result == "inherits") return constructToken(Token::INHERITS);
+  if (result == "new") return constructToken(Token::NEW);
+  if (result == "this") return constructToken(Token::THIS);
+  if (result == "super") return constructToken(Token::SUPER);
 
   // literals that are keywords
-  if (result == "true") return constructToken(Token::TRUE, result);
-  if (result == "false") return constructToken(Token::FALSE, result);
-  if (result == "null") return constructToken(Token::NOLL, result);
+  if (result == "true") return constructToken(Token::TRUE);
+  if (result == "false") return constructToken(Token::FALSE);
+  if (result == "null") return constructToken(Token::NOLL);
 
   // Otherwise it's a symbol of some sort. (E.g. a variable or function name).
-  return constructToken(Token::SYMBOL, result);
+  return constructToken(Token::SYMBOL);
 }
 
 Token Lexer::linaroString() {

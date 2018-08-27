@@ -8,7 +8,7 @@
 
 #include "object.h"
 
-#define VALUES(V) V(Number) V(Boolean) V(Object) V(Noll)
+#define VALUES(V) V(Number) V(Boolean) V(Object) V(Undefined) V(Noll)
 
 namespace linaro {
 /* Linaro Value. Dynamically typed */
@@ -19,7 +19,8 @@ class Value {
 #undef V
 
   // Initializing of different value type
-  Value() : m_type{nNoll} {}
+  Value() : m_type{nUndefined} {}
+  Value(ValueType type) : m_type{type} {}
   Value(double d) : m_type{nNumber}, as{d} {}
   Value(bool b) : m_type{nBoolean}, as{b} {}
   Value(const char* s) : m_type{nObject}, as{std::make_shared<String>(s)} {}
@@ -43,10 +44,8 @@ class Value {
 #undef V
 
   // Checks if the value is of a given object type.
-#define O(type)                                                  \
-  inline bool is##type() const {                                 \
-    return isObject() && AS_OBJ()->is##type(); \
-  }
+#define O(type) \
+  inline bool is##type() const { return isObject() && AS_OBJ()->is##type(); }
   OBJECTS(O)
 #undef V
 

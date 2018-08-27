@@ -123,6 +123,33 @@ linaro/fast:
 	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/build
 .PHONY : linaro/fast
 
+src/ast/ast.o: src/ast/ast.cpp.o
+
+.PHONY : src/ast/ast.o
+
+# target to build an object file
+src/ast/ast.cpp.o:
+	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/ast/ast.cpp.o
+.PHONY : src/ast/ast.cpp.o
+
+src/ast/ast.i: src/ast/ast.cpp.i
+
+.PHONY : src/ast/ast.i
+
+# target to preprocess a source file
+src/ast/ast.cpp.i:
+	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/ast/ast.cpp.i
+.PHONY : src/ast/ast.cpp.i
+
+src/ast/ast.s: src/ast/ast.cpp.s
+
+.PHONY : src/ast/ast.s
+
+# target to generate assembly for a file
+src/ast/ast.cpp.s:
+	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/ast/ast.cpp.s
+.PHONY : src/ast/ast.cpp.s
+
 src/linaro_utils/utils.o: src/linaro_utils/utils.cpp.o
 
 .PHONY : src/linaro_utils/utils.o
@@ -375,6 +402,9 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... linaro"
 	@echo "... edit_cache"
+	@echo "... src/ast/ast.o"
+	@echo "... src/ast/ast.i"
+	@echo "... src/ast/ast.s"
 	@echo "... src/linaro_utils/utils.o"
 	@echo "... src/linaro_utils/utils.i"
 	@echo "... src/linaro_utils/utils.s"

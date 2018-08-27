@@ -1,3 +1,4 @@
+#include <string.h>
 #include <ctime>
 #include <iostream>
 #include <string_view>
@@ -9,8 +10,11 @@
 #include "parsing/lexer.h"
 #include "parsing/token.h"
 #include "vm/value.h"
+#include "ast/ast.h"
+#include "ast/expression.h"
+#include "ast/statement.h"
 
-#define DEBUG_LEXER
+//#define DEBUG_LEXER
 using namespace linaro;
 
 int main() {
@@ -23,23 +27,23 @@ int main() {
     std::cout << t << std::endl;
     t = lex.nextToken();
   }
-    // Lexer debug code here
+  // Lexer debug code here
 #endif
 
 #ifdef DEBUG_PARSER
-    // Parser debug code here
+  // Parser debug code here
 #endif
 
 #ifdef DEBUG_CODE_GENERATOR
-    // Code generation debug code here
+  // Code generation debug code here
 #endif
 
 #ifdef DEBUG_VM
-    // VM debug code here
+  // VM debug code here
 #endif
 
-    clock_t end = clock();
-    std::cout << "Execution time: " << double(end - begin) / CLOCKS_PER_SEC
-              << "\n";
-    return 0;
-  }
+  clock_t end = clock();
+  std::cout << "Execution time: " << double(end - begin) / CLOCKS_PER_SEC
+            << "\n";
+  return 0;
+}

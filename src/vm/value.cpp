@@ -45,6 +45,7 @@ size_t Value::hash() const {
     case nBoolean:
       return std::hash<bool>{}(AS_BOOL());
     case nNoll:
+    case nUndefined:
       return 0;  // ?
     default:
       return AS_OBJ()->hash();
@@ -59,6 +60,7 @@ bool Value::canBeNumber() const {
     case nBoolean:
       return true;
     case nNoll:
+    case nUndefined:
       return false;
     default:
       // assert(std::holds_alternative<std::shared_ptr<Object>>(as));
@@ -75,6 +77,7 @@ double Value::asNumber() const {
     case nBoolean:
       return static_cast<double>(AS_BOOL());
     case nNoll:
+    case nUndefined:
       return 0.0;
     default:
       // assert(std::holds_alternative<std::shared_ptr<Object>>(as));
@@ -91,6 +94,7 @@ bool Value::asBoolean() const {
     case nBoolean:
       return AS_BOOL();
     case nNoll:
+    case nUndefined:
       return false;
     default:
       // assert(std::holds_alternative<std::shared_ptr<Object>>(as));
@@ -110,6 +114,7 @@ std::string Value::asString() const {
     case nBoolean:
       return (AS_BOOL() ? "true" : "false");
     case nNoll:
+    case nUndefined:
       return "Undefined";
     default:
       // assert(std::holds_alternative<std::shared_ptr<Object>>(as));
@@ -186,7 +191,8 @@ bool Value::equal(const Value& lhs, const Value& rhs) {
   ValueType temp = lhs.type();
   switch (temp) {
     case nNoll:
-      return true;  // change?
+    case nUndefined:
+      return false;
     case nBoolean:
     case nNumber:
       return numberEquals(lhs, rhs);

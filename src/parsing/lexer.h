@@ -42,19 +42,22 @@ class Lexer {
   }
 
   Token getNextToken();
-  inline size_t offsetFromCursor() const {
-    return (start + current) - cursor;
-  }
+  inline size_t offsetFromCursor() const { return (start + current) - cursor; }
   inline void syncCursor() { cursor += offsetFromCursor(); }
 
-  inline Token constructToken(Token::TokenType type, std::string_view sv) {
-    syncCursor();
-    return Token(type, current_location, sv);
-  }
-
   inline Token constructToken(Token::TokenType type) {
-    std::string_view sv{cursor, offsetFromCursor()};
-    return constructToken(type, sv);
+    switch (type) {
+      case Token::STRING:
+      case Token::SYMBOL:
+      case Token::NUMBER:
+      case Token::UNKNOWN: {
+        std::string_view sv{cursor, offsetFromCursor()};
+        syncCursor();
+        return Token(type, current_location, sv);
+      }
+      default:
+        return Token(type, current_location);
+    }
   }
 
   std::string m_source_code;

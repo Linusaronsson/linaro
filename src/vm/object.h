@@ -45,9 +45,7 @@ class String : public Object {
   String(const std::string& str) : Object{nString}, m_str{str} {}
   bool canBeNumber() const override;
   double asNumber() const override;
-  bool asBoolean() const override {
-    return (canBeNumber() && asNumber() != 0) || m_str == "true";
-  }
+  bool asBoolean() const override { return !m_str.empty(); }
   std::string asString() const override { return m_str; }
   size_t hash() const override { return std::hash<std::string>{}(m_str); }
 
@@ -168,7 +166,7 @@ class Array : public Object {
   char delimiter = ' ';
 };
 
-//This class will basically be what VM is now
+// This class will basically be what VM is now
 class Thread : public Object {
   Thread() : Object{nThread} {}
   bool canBeNumber() const override { return false; }
