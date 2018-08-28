@@ -45,12 +45,12 @@ class Lexer {
   inline size_t offsetFromCursor() const { return (start + current) - cursor; }
   inline void syncCursor() { cursor += offsetFromCursor(); }
 
-  inline Token constructToken(Token::TokenType type) {
+  inline Token constructToken(TokenType type) {
     switch (type) {
-      case Token::STRING:
-      case Token::SYMBOL:
-      case Token::NUMBER:
-      case Token::UNKNOWN: {
+      case TokenType::STRING:
+      case TokenType::SYMBOL:
+      case TokenType::NUMBER:
+      case TokenType::UNKNOWN: {
         std::string_view sv{cursor, offsetFromCursor()};
         syncCursor();
         return Token(type, current_location, sv);

@@ -20,6 +20,8 @@ using namespace linaro;
 int main() {
   //  uint64_t t1 = 0;
   clock_t begin = clock();
+  std::string test = "FFFFFFFFFFFFFFFFFFoFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
+  std::cout << test[18] << std::endl;
 #ifdef DEBUG_LEXER
   Lexer lex("script.lo");
   Token t = lex.nextToken();

@@ -76,105 +76,105 @@ Token Lexer::getNextToken() {
       // Guaranteed single char tokens
       case '*':
         advance();
-        return constructToken(Token::MUL);
+        return constructToken(TokenType::MUL);
       case '%':
         advance();
-        return constructToken(Token::MOD);
+        return constructToken(TokenType::MOD);
       case '/':
         advance();
-        return constructToken(Token::DIV);
+        return constructToken(TokenType::DIV);
       case '^':
         advance();
-        return constructToken(Token::EXP);
+        return constructToken(TokenType::EXP);
       case ')':
         advance();
-        return constructToken(Token::RPAREN);
+        return constructToken(TokenType::RPAREN);
       case '(':
         advance();
-        return constructToken(Token::LPAREN);
+        return constructToken(TokenType::LPAREN);
       case ']':
         advance();
-        return constructToken(Token::RSB);
+        return constructToken(TokenType::RSB);
       case '[':
         advance();
-        return constructToken(Token::LSB);
+        return constructToken(TokenType::LSB);
       case '}':
         advance();
-        return constructToken(Token::RCB);
+        return constructToken(TokenType::RCB);
       case '{':
         advance();
-        return constructToken(Token::LCB);
+        return constructToken(TokenType::LCB);
       case ',':
         advance();
-        return constructToken(Token::COMMA);
+        return constructToken(TokenType::COMMA);
       case '.':
         advance();
-        return constructToken(Token::PERIOD);
+        return constructToken(TokenType::PERIOD);
       case ':':
         advance();
-        return constructToken(Token::COLON);
+        return constructToken(TokenType::COLON);
 
       // EOS (semicolon).
       case ';':
         while (current_char == ';') advance();
-        return constructToken(Token::SEMICOLON);
+        return constructToken(TokenType::SEMICOLON);
 
       // Potential double char tokens
       case '=':
         if (peek() == '=') {
           advance(2);
-          return constructToken(Token::EQ);
+          return constructToken(TokenType::EQ);
         }
         advance();
-        return constructToken(Token::ASSIGN);
+        return constructToken(TokenType::ASSIGN);
       case '+':
         if (peek() == '+') {
           advance(2);
-          return constructToken(Token::INCR);
+          return constructToken(TokenType::INCR);
         }
         advance();
-        return constructToken(Token::ADD);
+        return constructToken(TokenType::ADD);
       case '-':
         if (peek() == '-') {
           advance(2);
-          return constructToken(Token::DECR);
+          return constructToken(TokenType::DECR);
         }
         advance();
-        return constructToken(Token::SUB);
+        return constructToken(TokenType::SUB);
       case '!':
         if (peek() == '=') {
           advance(2);
-          return constructToken(Token::NE);
+          return constructToken(TokenType::NE);
         }
         advance();
-        return constructToken(Token::NOT);
+        return constructToken(TokenType::NOT);
 
       case '>':
         if (peek() == '=') {
           advance(2);
-          return constructToken(Token::GTE);
+          return constructToken(TokenType::GTE);
         }
         advance();
-        return constructToken(Token::GT);
+        return constructToken(TokenType::GT);
 
       case '<':
         if (peek() == '=') {
           advance(2);
-          return constructToken(Token::LTE);
+          return constructToken(TokenType::LTE);
         }
         advance();
-        return constructToken(Token::LT);
+        return constructToken(TokenType::LT);
     }
 
     // If it gets here, the character is unknown.
     //  lexicalError(current_location, "Unrecognized token: %c\n",
     //  current_char);
     advance();
-    return constructToken(Token::UNKNOWN);
+    return constructToken(TokenType::UNKNOWN);
   }
 
   // Reached end of source file, return EOF token.
-  return constructToken(Token::END);
+  return constructToken(TokenType::END);
 }
 
 void Lexer::advance(unsigned int steps) {
@@ -197,7 +197,7 @@ Token Lexer::number() {
       advance();
     }
   }
-  return constructToken(Token::NUMBER);
+  return constructToken(TokenType::NUMBER);
   // Add support for numbers written in scientific notation
 }
 
@@ -209,31 +209,31 @@ Token Lexer::identifier() {
   std::string_view result{cursor, offsetFromCursor()};
 
   // If it's a reserved keyword:
-  if (result == "if") return constructToken(Token::IF);
-  if (result == "else") return constructToken(Token::ELSE);
-  if (result == "for") return constructToken(Token::FOR);
-  if (result == "while") return constructToken(Token::WHILE);
-  if (result == "print") return constructToken(Token::PRINT);
-  if (result == "function") return constructToken(Token::FUNCTION);
-  if (result == "return") return constructToken(Token::RETURN);
-  if (result == "and") return constructToken(Token::AND);
-  if (result == "or") return constructToken(Token::OR);
-  if (result == "class") return constructToken(Token::CLASS);
-  if (result == "method") return constructToken(Token::METHOD);
-  if (result == "field") return constructToken(Token::FIELD);
-  if (result == "constructor") return constructToken(Token::CONSTRUCTOR);
-  if (result == "inherits") return constructToken(Token::INHERITS);
-  if (result == "new") return constructToken(Token::NEW);
-  if (result == "this") return constructToken(Token::THIS);
-  if (result == "super") return constructToken(Token::SUPER);
+  if (result == "if") return constructToken(TokenType::IF);
+  if (result == "else") return constructToken(TokenType::ELSE);
+  if (result == "for") return constructToken(TokenType::FOR);
+  if (result == "while") return constructToken(TokenType::WHILE);
+  if (result == "print") return constructToken(TokenType::PRINT);
+  if (result == "function") return constructToken(TokenType::FUNCTION);
+  if (result == "return") return constructToken(TokenType::RETURN);
+  if (result == "and") return constructToken(TokenType::AND);
+  if (result == "or") return constructToken(TokenType::OR);
+  if (result == "class") return constructToken(TokenType::CLASS);
+  if (result == "method") return constructToken(TokenType::METHOD);
+  if (result == "field") return constructToken(TokenType::FIELD);
+  if (result == "constructor") return constructToken(TokenType::CONSTRUCTOR);
+  if (result == "inherits") return constructToken(TokenType::INHERITS);
+  if (result == "new") return constructToken(TokenType::NEW);
+  if (result == "this") return constructToken(TokenType::THIS);
+  if (result == "super") return constructToken(TokenType::SUPER);
 
   // literals that are keywords
-  if (result == "true") return constructToken(Token::TRUE);
-  if (result == "false") return constructToken(Token::FALSE);
-  if (result == "null") return constructToken(Token::NOLL);
+  if (result == "true") return constructToken(TokenType::TRUE);
+  if (result == "false") return constructToken(TokenType::FALSE);
+  if (result == "null") return constructToken(TokenType::NOLL);
 
   // Otherwise it's a symbol of some sort. (E.g. a variable or function name).
-  return constructToken(Token::SYMBOL);
+  return constructToken(TokenType::SYMBOL);
 }
 
 Token Lexer::linaroString() {
@@ -249,7 +249,7 @@ Token Lexer::linaroString() {
     advance();
   }
 
-  return constructToken(Token::STRING);
+  return constructToken(TokenType::STRING);
 }
 
 }  // namespace linaro

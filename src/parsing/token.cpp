@@ -4,10 +4,10 @@ namespace linaro {
 
 std::string_view Token::asString() const {
   switch (m_type) {
-    case Token::SYMBOL:
-    case Token::STRING:
-    case Token::NUMBER:
-    case Token::UNKNOWN:
+    case TokenType::SYMBOL:
+    case TokenType::STRING:
+    case TokenType::NUMBER:
+    case TokenType::UNKNOWN:
       return m_str;
     default:
       return std::string_view{tokenString(m_type)};

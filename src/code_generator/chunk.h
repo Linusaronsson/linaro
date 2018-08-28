@@ -7,17 +7,17 @@
 
 namespace linaro {
 
-class Location;
+struct Location;
 
 #define BYTECODE(name) name,
-enum class Bytecode : uint8_t {
+enum Bytecode : uint8_t {
 #include "bytecodes.h"
   NUM_BYTECODES
 };
 #undef BYTECODE
 
 #define BYTECODE(name) #name,
-const char* const bytecode_to_string[(uint8_t)Bytecode::NUM_BYTECODES]{
+const char* const bytecode_to_string[Bytecode::NUM_BYTECODES]{
 #include "bytecodes.h"
 };
 #undef BYTECODE

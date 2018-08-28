@@ -10,7 +10,7 @@
 
 namespace linaro {
 
-#define TOKEN_LIST(T, K, C)                     \
+#define TOKENS(T, K, C)                         \
   /* End of file. */                            \
   T(END, "EOF", 0)                              \
   T(EOS, "EOS", 0)                              \
@@ -94,14 +94,14 @@ struct Location {
   int col;
 };
 
+// Enum representation of TOKENS
+#define T(type, name, precedence) type,
+enum class TokenType : uint8_t { TOKENS(T, T, T) NUM_TOKENS };
+#undef T
+
 // Linaro token
 class Token {
  public:
-// Enum representation of TOKEN_LIST
-#define T(type, name, precedence) type,
-  enum TokenType { TOKEN_LIST(T, T, T) NUM_TOKENS };
-#undef T
-
   Token() {}
   // The rest, no value representation, printed using "tokenString()"
   Token(TokenType type, const Location& location)
@@ -124,49 +124,57 @@ class Token {
   // E.g token LPAREN becomes the strin "LPAREN"
   static const char* tokenName(TokenType type) {
     CHECK(type < NUM_TOKENS);
-    return token_name[type];
+    return token_name[(uint8_t)type];
   }
 
   // E.g token LPAREN becomes "("
   static const char* tokenString(TokenType type) {
     CHECK(type < NUM_TOKENS);
-    return token_string[type];
+    return token_string[(uint8_t)type];
   }
 
   std::string_view asString() const;
 
   static int getPrecedence(TokenType type) {
     CHECK(type < NUM_TOKENS);
-    return precedence[type];
+    return precedence[(uint8_t)type];
   }
 
-  static bool isLogicalOp(TokenType op) { return op == OR || op == AND; }
+  static bool isLogicalOp(TokenType op) {
+    return op == TokenType::OR || op == TokenType::AND;
+  }
   static bool isBinaryOp(TokenType op) {
-    return (OR <= op && op <= GTE) || op == PERIOD;
+    return (TokenType::OR <= op && op <= TokenType::GTE) ||
+           op == TokenType::PERIOD;
   }
 
-  static bool isComparisonOp(TokenType op) { return EQ <= op && op <= GTE; }
+  static bool isComparisonOp(TokenType op) {
+    return TokenType::EQ <= op && op <= TokenType::GTE;
+  }
   static bool isUnaryOp(TokenType op) {
-    return op == NOT || op == ADD || op == SUB;
+    return op == TokenType::NOT || op == TokenType::ADD || op == TokenType::SUB;
   }
 
-  static bool isCountOp(TokenType op) { return op == INCR || op == DECR; }
-  static bool isAssignOp(TokenType type) { return type == ASSIGN; }
+  static bool isCountOp(TokenType op) {
+    return op == TokenType::INCR || op == TokenType::DECR;
+  }
+  static bool isAssignOp(TokenType type) { return type == TokenType::ASSIGN; }
   friend std::ostream& operator<<(std::ostream& cout, const Token& tok);
 
  private:
 #define T(type, name, precedence) #type,
-  constexpr static const char* const token_name[NUM_TOKENS]{
-      TOKEN_LIST(T, T, T)};
+  constexpr static const char* const token_name[(uint8_t)TokenType::NUM_TOKENS]{
+      TOKENS(T, T, T)};
 #undef T
 
 #define T(type, name, precedence) #name,
-  constexpr static const char* const token_string[NUM_TOKENS]{
-      TOKEN_LIST(T, T, T)};
+  constexpr static const char* const
+      token_string[(uint8_t)TokenType::NUM_TOKENS]{TOKENS(T, T, T)};
 #undef T
 
 #define T(name, string, precedence) precedence,
-  constexpr static const int8_t precedence[NUM_TOKENS]{TOKEN_LIST(T, T, T)};
+  constexpr static const int8_t precedence[(uint8_t)TokenType::NUM_TOKENS]{
+      TOKENS(T, T, T)};
 #undef T
 
   TokenType m_type;

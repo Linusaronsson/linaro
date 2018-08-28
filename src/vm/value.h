@@ -10,29 +10,33 @@
 
 #define VALUES(V) V(Number) V(Boolean) V(Object) V(Undefined) V(Noll)
 
+#define V(type) n##type,
+enum class ValueType : uint8_t { VALUES(V) };
+#undef V
+
 namespace linaro {
 /* Linaro Value. Dynamically typed */
 class Value {
  public:
-#define V(type) n##type,
-  enum ValueType : uint8_t { VALUES(V) };
-#undef V
-
   // Initializing of different value type
-  Value() : m_type{nUndefined} {}
+  Value() : m_type{ValueType::nUndefined} {}
   Value(ValueType type) : m_type{type} {}
-  Value(double d) : m_type{nNumber}, as{d} {}
-  Value(bool b) : m_type{nBoolean}, as{b} {}
-  Value(const char* s) : m_type{nObject}, as{std::make_shared<String>(s)} {}
-  Value(std::shared_ptr<Object> obj) : m_type{nObject}, as{obj} {}
+  Value(double d) : m_type{ValueType::nNumber}, as{d} {}
+  Value(bool b) : m_type{ValueType::nBoolean}, as{b} {}
+  Value(const char* s)
+      : m_type{ValueType::nObject}, as{std::make_shared<String>(s)} {}
+  Value(std::shared_ptr<Object> obj) : m_type{ValueType::nObject}, as{obj} {}
 
-  Value(const String& s) : m_type{nObject}, as{std::make_shared<String>(s)} {}
+  Value(const String& s)
+      : m_type{ValueType::nObject}, as{std::make_shared<String>(s)} {}
   Value(const Function& fun)
-      : m_type{nObject}, as{std::make_shared<Function>(fun)} {}
+      : m_type{ValueType::nObject}, as{std::make_shared<Function>(fun)} {}
   Value(const Closure& cl)
-      : m_type{nObject}, as{std::make_shared<Closure>(cl)} {}
-  Value(const Array& arr) : m_type{nObject}, as{std::make_shared<Array>(arr)} {}
-  Value(const Thread& t) : m_type{nObject}, as{std::make_shared<Thread>(t)} {}
+      : m_type{ValueType::nObject}, as{std::make_shared<Closure>(cl)} {}
+  Value(const Array& arr)
+      : m_type{ValueType::nObject}, as{std::make_shared<Array>(arr)} {}
+  Value(const Thread& t)
+      : m_type{ValueType::nObject}, as{std::make_shared<Thread>(t)} {}
   virtual ~Value() {}
 
   // Helper methods

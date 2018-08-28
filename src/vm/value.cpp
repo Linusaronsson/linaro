@@ -40,12 +40,12 @@ namespace linaro {
 
 size_t Value::hash() const {
   switch (m_type) {
-    case nNumber:
+    case ValueType::nNumber:
       return std::hash<double>{}(AS_NUMBER());
-    case nBoolean:
+    case ValueType::nBoolean:
       return std::hash<bool>{}(AS_BOOL());
-    case nNoll:
-    case nUndefined:
+    case ValueType::nNoll:
+    case ValueType::nUndefined:
       return 0;  // ?
     default:
       return AS_OBJ()->hash();
@@ -56,11 +56,11 @@ size_t Value::hash() const {
 
 bool Value::canBeNumber() const {
   switch (m_type) {
-    case nNumber:
-    case nBoolean:
+    case ValueType::nNumber:
+    case ValueType::nBoolean:
       return true;
-    case nNoll:
-    case nUndefined:
+    case ValueType::nNoll:
+    case ValueType::nUndefined:
       return false;
     default:
       // assert(std::holds_alternative<std::shared_ptr<Object>>(as));
@@ -72,12 +72,12 @@ bool Value::canBeNumber() const {
 
 double Value::asNumber() const {
   switch (m_type) {
-    case nNumber:
+    case ValueType::nNumber:
       return AS_NUMBER();
-    case nBoolean:
+    case ValueType::nBoolean:
       return static_cast<double>(AS_BOOL());
-    case nNoll:
-    case nUndefined:
+    case ValueType::nNoll:
+    case ValueType::nUndefined:
       return 0.0;
     default:
       // assert(std::holds_alternative<std::shared_ptr<Object>>(as));
@@ -89,12 +89,12 @@ double Value::asNumber() const {
 
 bool Value::asBoolean() const {
   switch (m_type) {
-    case nNumber:
+    case ValueType::nNumber:
       return static_cast<bool>(AS_NUMBER());
-    case nBoolean:
+    case ValueType::nBoolean:
       return AS_BOOL();
-    case nNoll:
-    case nUndefined:
+    case ValueType::nNoll:
+    case ValueType::nUndefined:
       return false;
     default:
       // assert(std::holds_alternative<std::shared_ptr<Object>>(as));
@@ -106,15 +106,15 @@ bool Value::asBoolean() const {
 
 std::string Value::asString() const {
   switch (m_type) {
-    case nNumber: {
+    case ValueType::nNumber: {
       std::ostringstream ss;
       ss << AS_NUMBER();
       return ss.str();
     }
-    case nBoolean:
+    case ValueType::nBoolean:
       return (AS_BOOL() ? "true" : "false");
-    case nNoll:
-    case nUndefined:
+    case ValueType::nNoll:
+    case ValueType::nUndefined:
       return "Undefined";
     default:
       // assert(std::holds_alternative<std::shared_ptr<Object>>(as));
@@ -190,13 +190,13 @@ bool Value::stringEquals(const Value& lhs, const Value& rhs) {
 bool Value::equal(const Value& lhs, const Value& rhs) {
   ValueType temp = lhs.type();
   switch (temp) {
-    case nNoll:
-    case nUndefined:
+    case ValueType::nNoll:
+    case ValueType::nUndefined:
       return false;
-    case nBoolean:
-    case nNumber:
+    case ValueType::nBoolean:
+    case ValueType::nNumber:
       return numberEquals(lhs, rhs);
-    case nObject:
+    case ValueType::nObject:
       return stringEquals(lhs, rhs);
     default:
       UNREACHABLE();
