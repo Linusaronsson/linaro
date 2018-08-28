@@ -31,7 +31,7 @@ Token Parser::lookahead(int steps) {
   return buffer[(buffer_index + steps - 1) % buffer_size];
 }
 
-Token::TokenType Parser::peek(int steps) { return lookahead(steps).type(); }
+TokenType Parser::peek(int steps) { return lookahead(steps).type(); }
 
 void Parser::rotateBuffer() {
   buffer[buffer_index] = m_lex.nextToken();
@@ -46,7 +46,7 @@ void Parser::nextToken() {
 
 void Parser::synchronize() {
   nextToken();
-  while (currentToken() != Token::END) {
+  while (currentToken() != TokenType::END) {
     switch (currentToken()) {
       case TokenType::FUNCTION:
       case TokenType::CLASS:
@@ -346,46 +346,52 @@ Stmt Parser::parse() {
 StatementPtr Parser::parseStatement() {
   StatementPtr stmt;
   switch (currentToken()) {
-    case LCB: {
+    case TokenType::LCB: {
       stmt = std::make_unique<Block>();
       parseBlock(stmt);
-    }
-    case VAR: {
-      stmt = std::make_unique<Block>();
-      parseBlock(stmt);
-    }
-      return ParseVariableDeclaration();
-    case WHILE:
-      return ParseWhileStatement();
-    case IF:
-      return ParseIfStatement();
-    case PRINT:
-      return ParseSingleExpressionStatement<PrintStatement>();
-    case RETURN:
-      return ParseSingleExpressionStatement<ReturnStatement>();
-    case CLASS:
-      return ParseClassDeclaration();
-    case FUNCTION:
-      // if there's no symbol it's anonymous, which is handled in
-      // ParseExpression()
-      if (Peek() == SYMBOL)
-        return ParseFunctionDeclaration(FunctionType::named);
       break;
+    }
+    case TokenType::WHILE: {
+      stmt = std::make_unique<WhileStatement>();
+      parseWhileStatement(stmt);
+      break;
+    }
+    case TokenType::IF: {
+      stmt = std::make_unique<IfStatement>();
+      parseIfStatement(stmt);
+      break;
+    }
+    case TokenType::PRINT: {
+      stmt = std::make_unique<PrintStatement>();
+      parseSingleExpressionStatement<PrintStatement>(stmt);
+      break;
+    }
+    case TokenType::RETURN {
+      stmt = std::make_unique<ReturnStatement>();
+      ParseSingleExpressionStatement<ReturnStatement>(stmt);
+      break;
+    }:
+    case TokenType::FUNCTION: {
+      stmt = std::make_unique<Functiondeclaration>(stmt);
+      // If there's no symbol it's anonymous, which is handled in
+      // ParseExpression()
+      if (peek() == TokenType::SYMBOL)
+        parseFunctionDeclaration(FunctionType::named);
+      break;
+    }
+
     default:
       // if no valid start of statement then it's an expression
-      stmt = std::make_unique<ExpressionStatement>(ParseExpression());
+      stmt = std::make_unique<ExpressionStatement>(parseExpression());
       expectEndOfStatement("Expected end of expression statement");
   }
   return stmt;
 }
 
-void Parser::parseBlock(BlockPtr& stmt) {
+void Parser::parseBlock(BlockPtr& block) {
   Consume(LCB, "Expected { for start of block.");
   while (currentToken() != TokenType::RCB && currentToken() != TokenType::END) {
-    Stmt st = parseStatement();
-    if (st != nullptr) {
-      block->addStatement(st);
-    }
+    if (st != nullptr) block->addStatement(st);
   }
   Consume(RCB, "Expected } after block.");
 }

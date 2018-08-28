@@ -3,6 +3,9 @@
 #include <iostream>
 #include <string_view>
 
+#include "ast/ast.h"
+#include "ast/expression.h"
+#include "ast/statement.h"
 #include "code_generator/chunk.h"
 #include "code_generator/code_generator.h"
 #include "linaro_utils/common.h"
@@ -10,9 +13,6 @@
 #include "parsing/lexer.h"
 #include "parsing/token.h"
 #include "vm/value.h"
-#include "ast/ast.h"
-#include "ast/expression.h"
-#include "ast/statement.h"
 
 //#define DEBUG_LEXER
 using namespace linaro;
@@ -21,7 +21,7 @@ int main() {
   //  uint64_t t1 = 0;
   clock_t begin = clock();
   std::string test = "FFFFFFFFFFFFFFFFFFoFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
-  std::cout << test[18] << std::endl;
+  std::cout << test << std::endl;
 #ifdef DEBUG_LEXER
   Lexer lex("script.lo");
   Token t = lex.nextToken();
