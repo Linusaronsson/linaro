@@ -40,30 +40,8 @@ class Parser {
 
   const Location& loc() { return m_lex.getLocation(); }
 
-  // Dispatches to one of the possible statements below,
-  // depending on the current token.
-  StatementPtr parseStatement();
+  /* --- Expression evaluation --- */
 
-  // Helper method for parsing and adding a statement to a block
-  void addStatement(BlockPtr& block);
-
-  // Statements
-  BlockPtr parseBlock();
-  StatementPtr parseIfStatement();
-  StatementPtr parseWhileStatement();
-
-  void transformBinOpWithNumberLiterals(Expression** x, Expression* y,
-                                        const Token& op, const Location& loc);
-
-  // return/print
-  template <class T>
-  StatementPtr parseSingleExpressionStatement();
-
-  // Declarations (that are visited before other statements in AST)
-  StatementPtr parseFunctionDeclaration();
-  //  void parseClassDeclaration(StatementPtr& stmt);
-
-  // Expression evaluation
   ExpressionPtr parseExpression(int precedence);
   ExpressionPtr parseUnaryPrefixOperation();
   ExpressionPtr parseBinaryOperation(ExpressionPtr& left);
@@ -72,6 +50,28 @@ class Parser {
   ExpressionPtr parseCall(ExpressionPtr& left);
   FunctionLiteralPtr parseFunctionLiteral(std::string_view name,
                                           FunctionType type);
+  ExpressionPtr parseArrayLiteral();
+
+  /* --- Statements --- */
+
+  // Dispatches to one of the possible statements below,
+  // depending on the current token.
+  StatementPtr parseStatement();
+
+  // Helper method for parsing and adding a statement to a block
+  void addStatement(BlockPtr& block);
+
+  BlockPtr parseBlock();
+  StatementPtr parseIfStatement();
+  StatementPtr parseWhileStatement();
+
+  // return/print
+  template <class T>
+  StatementPtr parseSingleExpressionStatement();
+
+  // Declarations (that are visited before other statements in AST)
+  StatementPtr parseFunctionDeclaration();
+  //  void parseClassDeclaration(StatementPtr& stmt);
 
   static const int buffer_size = 6;
   Lexer m_lex;

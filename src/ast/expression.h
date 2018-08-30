@@ -104,7 +104,17 @@ class ArrayLiteral : public Expression {
   const auto& elements() const { return m_elements; }
 
   void visit(NodeVisitor& v) override { v.visitArrayLiteral(*this); }
-  void printNode() const override { std::cout << "ArrayLiteral()\n"; }
+  void printNode() const override {
+    std::cout << "ArrayLiteral(";
+    if (!m_elements.empty()) {
+      std::cout << "Args: ";
+      for (auto it = m_elements.begin(); it != m_elements.end(); it++) {
+        it->get()->printNode();
+        if (std::next(it) != m_elements.end()) std::cout << ", ";
+      }
+    }
+    std::cout << ")";
+  }
 
  private:
   std::vector<ExpressionPtr> m_elements;
@@ -247,55 +257,6 @@ class Assignment : public Expression {
   ExpressionPtr m_target;  // must be lvalue
   const Token m_op;
   ExpressionPtr m_right;
-};
-
-enum class CallType {
-  /*
-  Named:  Tries to find function symbol and calls it. If not found then
-          it was an anonymous call to a single identifier, in which case
-                  the TOS is called.
-  Syntax: [name]([args])
-  */
-  NAMED,
-
-  /*
-  Super:  Call constructor of superclass. Can only be called inside
-              of the dervied classes constructor.
-  Syntax: super([args])
-  */
-  SUPER,
-
-  /*
-  This:   Call constructor of own class. Can only be called inside
-              of constructor.
-  Syntax: this([args])
-  */
-  THIS,
-
-  /*
-  Anms:   Calls whatever is put on top of the operand stack by [expr].
-                  Runtime error if it's not a function object. Note that
-                  [expr] could be an identifier, which means it will be a
-                  named call instead. (Read descriptor of NAMED).
-  Syntax: [expr]([args])
-  */
-  ANONYMOUS,
-
-  /*
-  Method: Calls a method of some class instance.
-  Syntax: [expr].[symbol]([args])
-  Issue:	x.b() could be for method "b" or field "b" containing an
-  anonymous function. This will be resolved at runtime.
-  */
-  METHOD,
-
-  /*
-  New:   Constructs a new class instance of type [class_name], calls
-         it's constructor and puts the initialized instance on TOS.
-  Syntax: new [class_name]([args])
-  */
-  NEW_OBJ
-
 };
 
 // If I will need call types in the future, introduce sub classes to Call

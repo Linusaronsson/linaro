@@ -19,6 +19,18 @@ Parser::Parser(const char* filename) : m_lex{Lexer(filename)} {
   nextToken();
 }
 
+NodePtr Parser::parse() {
+  Identifier argc(Token(TokenType::SYMBOL, std::string_view("argc")));
+  Identifier argv(Token(TokenType::SYMBOL, std::string_view("argv")));
+  std::vector<Identifier> main_args = {argc, argv};
+  BlockPtr main_block = std::make_unique<Block>();
+  while (currentToken() != TokenType::END) {
+    addStatement(main_block);
+  }
+  return std::make_unique<FunctionLiteral>(
+      FunctionType::top_level, "@main_function", main_args, main_block);
+}
+
 void Parser::syntaxError(const Location& loc, const char* format, ...) {
   va_list args;
   va_start(args, format);
@@ -184,6 +196,8 @@ ExpressionPtr Parser::parseUnaryPrefixOperation() {
         name = "@Anonymous";
       return parseFunctionLiteral(name, FunctionType::anonymous);
     }
+    case TokenType::LCB:
+      return parseArrayLiteral();
     case TokenType::SYMBOL:
       return std::make_unique<Identifier>(previous_token);
     // Unary prefix operators
@@ -296,30 +310,20 @@ FunctionLiteralPtr Parser::parseFunctionLiteral(std::string_view name,
   return std::make_unique<FunctionLiteral>(type, name, args, function_block);
 }
 
+ExpressionPtr Parser::parseArrayLiteral() {
+  ArrayLiteralPtr arr = std::make_unique<ArrayLiteral>();
+  if (currentToken() != TokenType::RCB) {
+    do {
+      arr->addElement(parseExpression());
+    } while (match(TokenType::COMMA));
+  }
+  consume(TokenType::RCB, "Expected '}'");
+  return arr;
+}
+
 /* ----------- Expression end ------------- */
 
 /* ----------- Statements ----------------- */
-
-NodePtr Parser::parse() {
-  Identifier argc(Token(TokenType::SYMBOL, std::string_view("argc")));
-  Identifier argv(Token(TokenType::SYMBOL, std::string_view("argv")));
-  std::vector<Identifier> main_args = {argc, argv};
-  BlockPtr main_block = std::make_unique<Block>();
-  while (currentToken() != TokenType::END) {
-    addStatement(main_block);
-  }
-  return std::make_unique<FunctionLiteral>(
-      FunctionType::top_level, "@main_function", main_args, main_block);
-}
-
-// print/return
-template <class T>
-StatementPtr Parser::parseSingleExpressionStatement() {
-  nextToken();  // keyword
-  auto stmt = std::make_unique<T>(parseExpression());
-  expectEndOfStatement("Expected end of statement");
-  return stmt;
-}
 
 StatementPtr Parser::parseStatement() {
   switch (currentToken()) {
@@ -356,6 +360,7 @@ StatementPtr Parser::parseStatement() {
 void Parser::addStatement(BlockPtr& block) {
   CHECK(block != nullptr);
   StatementPtr stmt = parseStatement();
+  CHECK(stmt != nullptr);
   if (stmt != nullptr) {
     if (stmt->isFunctionDeclaration())
       // Add the declaration.
@@ -373,13 +378,6 @@ BlockPtr Parser::parseBlock() {
   }
   consume(TokenType::RCB, "Expected } after block.");
   return block;
-}
-
-StatementPtr Parser::parseFunctionDeclaration() {
-  nextToken();  // function
-  // Expect but don't consume, symbol is needed when function literal is parsed
-  expect(TokenType::SYMBOL, "Expected function name.");
-  return std::make_unique<FunctionDeclaration>(current_token);
 }
 
 StatementPtr Parser::parseIfStatement() {
@@ -404,4 +402,19 @@ StatementPtr Parser::parseWhileStatement() {
   return std::make_unique<WhileStatement>(condition, block);
 }
 
+// print/return
+template <class T>
+StatementPtr Parser::parseSingleExpressionStatement() {
+  nextToken();  // keyword
+  auto stmt = std::make_unique<T>(parseExpression());
+  expectEndOfStatement("Expected end of statement");
+  return stmt;
+}
+
+StatementPtr Parser::parseFunctionDeclaration() {
+  nextToken();  // function
+  // Expect but don't consume, symbol is needed when function literal is parsed
+  expect(TokenType::SYMBOL, "Expected function name.");
+  return std::make_unique<FunctionDeclaration>(current_token);
+}
 }  // namespace linaro
