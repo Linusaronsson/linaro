@@ -30,17 +30,22 @@ bool Expression::toBooleanIsTrue() {
 bool Expression::toBooleanIsFalse() { return !toBooleanIsTrue(); }
 
 void FunctionLiteral::printNode() const {
-  std::cout << "FunctionLiteral(";
-  for (const auto& a : m_args) {
-    a.printNode();
+  std::cout << "FunctionLiteral: {\n";
+  std::cout << "Name: " << m_function_name << '\n';
+  std::cout << "Arguments: ";
+  for (auto it = m_args.begin(); it != m_args.end(); it++) {
+    it->printNode();
+    if (std::next(it) != m_args.end()) std::cout << ", ";
   }
+  std::cout << "\n\n";
   m_function_block->printNode();
-  std::cout << ")" << std::endl;
+  std::cout << "\n";
+  std::cout << "} // End of FunctionLiteral: " << m_function_name << "\n";
 }
 
 // This needs some fixing probably
 bool BinaryOperation::isValidReferenceExpression() {
-  if (m_op.type() != Token::PERIOD) return false;
+  if (m_op.type() != TokenType::PERIOD) return false;
   return (m_left->isValidReferenceExpression() || m_left->isCall() ||
           m_right->isIdentifier());
 }

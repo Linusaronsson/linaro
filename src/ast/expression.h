@@ -64,11 +64,11 @@ enum class FunctionType { anonymous, named, method, constructor, top_level };
 class FunctionLiteral : public Expression {
  public:
   FunctionLiteral(FunctionType type, std::string_view name,
-                  std::vector<Identifier> args, BlockPtr block)
+                  const std::vector<Identifier>& args, BlockPtr& block)
       : Expression(nFunctionLiteral),
         m_type(type),
         m_function_name(name),
-        m_args(args),
+        m_args(std::move(args)),
         m_function_block(std::move(block)) {}
 
   void addArgument(const Identifier& id) { m_args.push_back(id); }
@@ -93,6 +93,46 @@ class FunctionLiteral : public Expression {
   BlockPtr m_function_block;
 };
 
+class ArrayLiteral : public Expression {
+ public:
+  ArrayLiteral() : Expression(nArrayLiteral) {}
+
+  void addElement(ExpressionPtr element) {
+    m_elements.push_back(std::move(element));
+  }
+
+  const auto& elements() const { return m_elements; }
+
+  void visit(NodeVisitor& v) override { v.visitArrayLiteral(*this); }
+  void printNode() const override { std::cout << "ArrayLiteral()\n"; }
+
+ private:
+  std::vector<ExpressionPtr> m_elements;
+};
+
+class ArrayAccess : public Expression {
+ public:
+  ArrayAccess(ExpressionPtr& target, ExpressionPtr index)
+      : Expression(nArrayAccess),
+        m_target(std::move(target)),
+        m_index(std::move(index)) {}
+
+  Expression* index() const { return m_index.get(); }
+
+  void visit(NodeVisitor& v) override { v.visitArrayAccess(*this); }
+  void printNode() const override {
+    std::cout << "ArrayAccess(Target: ";
+    m_target->printNode();
+    std::cout << ", Index: ";
+    m_index->printNode();
+    std::cout << ')';
+  }
+
+ private:
+  ExpressionPtr m_target;
+  ExpressionPtr m_index;
+};
+
 class Identifier : public Expression {
  public:
   Identifier(const Token& tok) : Expression(nIdentifier), m_tok(tok) {}
@@ -112,7 +152,7 @@ class Identifier : public Expression {
 
 class BinaryOperation : public Expression {
  public:
-  BinaryOperation(ExpressionPtr left, const Token& op, ExpressionPtr right)
+  BinaryOperation(ExpressionPtr& left, const Token& op, ExpressionPtr& right)
       : Expression(nBinaryOperation),
         m_left(std::move(left)),
         m_op(op),
@@ -120,7 +160,7 @@ class BinaryOperation : public Expression {
 
   bool isValidReferenceExpression() override;
   bool isLogicalOperation() { return Token::isLogicalOp(m_op.type()); }
-  bool isMemberAccess() { return m_op.type() == Token::PERIOD; }
+  bool isMemberAccess() { return m_op.type() == TokenType::PERIOD; }
   const Token& op() const { return m_op; }
 
   Expression* leftOperand() const { return m_left.get(); }
@@ -145,15 +185,14 @@ class BinaryOperation : public Expression {
 
 class UnaryOperation : public Expression {
  public:
-  UnaryOperation(const Token& op, ExpressionPtr operand, bool is_postfix)
+  UnaryOperation(ExpressionPtr operand, const Token& op, bool is_postfix)
       : Expression(nUnaryOperation),
-        m_op(op),
         m_operand(std::move(operand)),
+        m_op(op),
         m_is_postfix(is_postfix) {}
 
   const Token& op() const { return m_op; }
   Expression* operand() const { return m_operand.get(); }
-  bool isNewOperator() { return m_op.type() == Token::NEW; }
 
   //-, +, --, ++, !
   bool isPrefix() { return !m_is_postfix; }
@@ -176,14 +215,14 @@ class UnaryOperation : public Expression {
   }
 
  private:
-  const Token m_op;
   ExpressionPtr m_operand;
+  const Token m_op;
   bool m_is_postfix;
 };
 
 class Assignment : public Expression {
  public:
-  Assignment(ExpressionPtr target, Token op, ExpressionPtr right)
+  Assignment(ExpressionPtr& target, Token op, ExpressionPtr right)
       : Expression(nAssignment),
         m_target(std::move(target)),
         m_op(op),
@@ -259,43 +298,39 @@ enum class CallType {
 
 };
 
+// If I will need call types in the future, introduce sub classes to Call
+// for each type instead. Keep common things in the Call class.
 class Call : public Expression {
  public:
-  Call(CallType type, ExpressionPtr caller)
-      : Expression(nCall), m_type(type), m_caller(std::move(caller)) {}
+  Call(ExpressionPtr& caller)
+      : Expression(nCall), m_caller(std::move(caller)) {}
 
   Call* asCall() { return this; }
-  const auto& arguments() const { return m_arguments; }
+  const auto& arguments() const { return m_args; }
   Expression* caller() const { return m_caller.get(); }
 
-  void setCallType(CallType type) { m_type = type; }
-  void addArgument(ExpressionPtr arg) { m_arguments.push_back(std::move(arg)); }
-  bool isNamedCall() const { return m_type == CallType::NAMED; }
-  bool isSuperCall() const { return m_type == CallType::SUPER; }
-  bool isThisCall() const { return m_type == CallType::THIS; }
-  bool isMethodCall() const { return m_type == CallType::METHOD; }
-  bool isAnonymousCall() const { return m_type == CallType::ANONYMOUS; }
-  bool isNewCall() const { return m_type == CallType::NEW_OBJ; }
+  void addArgument(ExpressionPtr arg) { m_args.push_back(std::move(arg)); }
   bool isValidReferenceIdentifier();
 
   void visit(NodeVisitor& v) override { v.visitCall(*this); }
   void printNode() const override {
     std::cout << "FunctionCall(";
+    std::cout << "Caller: ";
     m_caller->printNode();
-    if (!m_arguments.empty()) {
-      std::cout << ", args: ";
-      for (auto& s : m_arguments) {
-        s->printNode();
-        std::cout << ", ";
+
+    if (!m_args.empty()) {
+      std::cout << ", Args: ";
+      for (auto it = m_args.begin(); it != m_args.end(); it++) {
+        it->get()->printNode();
+        if (std::next(it) != m_args.end()) std::cout << ", ";
       }
     }
     std::cout << ")";
   }
 
  private:
-  CallType m_type;
   ExpressionPtr m_caller;
-  std::vector<ExpressionPtr> m_arguments;
+  std::vector<ExpressionPtr> m_args;
 };
 
 }  // namespace linaro

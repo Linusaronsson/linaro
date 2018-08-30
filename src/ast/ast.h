@@ -11,6 +11,8 @@ namespace linaro {
   /* Expression nodes: */ \
   T(Literal)              \
   T(FunctionLiteral)      \
+  T(ArrayLiteral)         \
+  T(ArrayAccess)          \
   T(Identifier)           \
   T(BinaryOperation)      \
   T(Assignment)           \
@@ -27,8 +29,6 @@ namespace linaro {
   T(ReturnStatement)      \
   T(PrintStatement)       \
   T(FunctionDeclaration)  \
-  T(VariableDeclaration)  \
-  T(ClassDeclaration)     \
   T(IfStatement)          \
   T(WhileStatement)
 

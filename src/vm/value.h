@@ -25,6 +25,8 @@ class Value {
   Value(bool b) : m_type{ValueType::nBoolean}, as{b} {}
   Value(const char* s)
       : m_type{ValueType::nObject}, as{std::make_shared<String>(s)} {}
+  Value(std::string_view str)
+      : m_type{ValueType::nObject}, as{std::make_shared<String>(str)} {}
   Value(std::shared_ptr<Object> obj) : m_type{ValueType::nObject}, as{obj} {}
 
   Value(const String& s)

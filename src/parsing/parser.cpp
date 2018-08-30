@@ -12,7 +12,7 @@
 
 namespace linaro {
 
-Parser::Parser(const Lexer& lex) : m_lex(lex) {
+Parser::Parser(const char* filename) : m_lex{Lexer(filename)} {
   // Fill buffer with the initial 6 tokens
   for (int i = 0; i < buffer_size; i++) buffer[i] = m_lex.nextToken();
   current_token = buffer[0];
@@ -48,7 +48,6 @@ void Parser::synchronize() {
   nextToken();
   while (currentToken() != TokenType::END) {
     switch (currentToken()) {
-      case TokenType::FUNCTION:
       case TokenType::CLASS:
       case TokenType::IF:
       case TokenType::PRINT:
@@ -72,7 +71,7 @@ Value Parser::constructValue(const Token& tok) {
     case TokenType::FALSE:
       return Value(false);
     case TokenType::NUMBER:
-      return Value(std::stod(tok.asString()));
+      return Value(std::stod(std::string(tok.asString())));
     case TokenType::STRING:
       return Value(tok.asString());
     case TokenType::NOLL:
@@ -85,7 +84,8 @@ Value Parser::constructValue(const Token& tok) {
 
 void Parser::unexpectedToken(const Token& tok) {
   // can check for specific tokens here for more specific messages
-  syntaxError(tok.getLocation(), "Unexpected token: %s", tok.asString());
+  syntaxError(tok.getLocation(), "Unexpected token: %s\n",
+              std::string(tok.asString()).c_str());
 }
 
 void Parser::skipBlock() {
@@ -103,7 +103,7 @@ void Parser::skipBlock() {
 
 // Advancing token without reporting error if it was wrong.
 bool Parser::match(TokenType expected) {
-  if (current_token.Type() != expected) return false;
+  if (currentToken() != expected) return false;
   nextToken();
   return true;
 }
@@ -115,6 +115,11 @@ void Parser::consume(TokenType expected, const char* error_message) {
     syntaxError(previous_token.getLocation(), error_message);
     if (currentToken() == expected) nextToken();
   }
+}
+
+void Parser::expect(TokenType expected, const char* error_message) {
+  if (currentToken() != expected)
+    syntaxError(current_token.getLocation(), error_message);
 }
 
 // automatic semicolon "insertion"
@@ -137,9 +142,9 @@ void Parser::expectEndOfStatement(const char* error_message) {
 
 ExpressionPtr Parser::parseExpression(int precedence = 0) {
   // prefix
-  auto left = parseUnaryPrefixOperation();
+  ExpressionPtr expr = parseUnaryPrefixOperation();
 
-  if (!left) {
+  if (expr == nullptr) {
     if (previousToken() == TokenType::END) {
       syntaxError(previous_token.getLocation(),
                   "Unexpectedly reached end of source");
@@ -147,53 +152,55 @@ ExpressionPtr Parser::parseExpression(int precedence = 0) {
       unexpectedToken(previous_token);
       nextToken();
     }
-
+    // Consider just returning nullptr?
     return std::make_unique<NullExpression>();
   }
-
   // infix / postfix
-  while (precedence < Token::getPrecedence(currentToken())) {
-    left = parseBinaryOperation(std::move(left));
+  while (precedence < Token::precedence(currentToken())) {
+    expr = parseBinaryOperation(expr);
   }
-  return left;
+  return expr;
 }
 
 ExpressionPtr Parser::parseUnaryPrefixOperation() {
-  Token temp = current_token;
   nextToken();
-  switch (temp.type()) {
-      // primary expression
+  switch (previousToken()) {
+    // Primary expression
     case TokenType::NUMBER:
     case TokenType::STRING:
     case TokenType::NOLL:
     case TokenType::TRUE:
     case TokenType::FALSE:
-      return std::make_unique<Expression>(
-          Literal(temp.getLocation(), constructValue(temp)));
+      return std::make_unique<Literal>(previous_token.getLocation(),
+                                       constructValue(previous_token));
+    case TokenType::FUNCTION: {
+      std::string_view name;
+      // Anonymous function with name
+      if (currentToken() == TokenType::SYMBOL) {
+        name = current_token.asString();
+        nextToken();
+        // Without name
+      } else
+        name = "@Anonymous";
+      return parseFunctionLiteral(name, FunctionType::anonymous);
+    }
     case TokenType::SYMBOL:
-      return std::make_unique<Expression>(Identifier(temp));
-    // function expression
-    case TokenType::FUNCTION:
-      return parseFunctionLiteral("Anonymous", FunctionType::anonymous);
-    case TokenType::THIS:
-      return make_shared<This>(temp);
-    case TokenType::SUPER:
-      return make_shared<Super>(temp);
-    // unary prefix operators
+      return std::make_unique<Identifier>(previous_token);
+    // Unary prefix operators
     case TokenType::ADD:
-      return ParseExpression(
-          15);  // (what did i think here? might be correct tho)
+      // Just ignore unary add, it has no effect
+      return parseExpression(15);
     case TokenType::SUB:
     case TokenType::NOT:
     case TokenType::INCR:
     case TokenType::DECR:
     case TokenType::NEW:
-      return make_shared<UnaryOperation>(temp, ParseExpression(15),
-                                         false /* prefix */);
-    // parenthesized expr
-    case LPAREN: {
-      auto expr = ParseExpression();
-      Consume(RPAREN, "Expected ')' for end of input.");
+      return std::make_unique<UnaryOperation>(
+          parseExpression(15), previous_token, false /* prefix */);
+    // Parenthesized expr
+    case TokenType::LPAREN: {
+      auto expr = parseExpression();
+      consume(TokenType::RPAREN, "Expected ')' for end of input.");
       return expr;
     }
     default:
@@ -201,318 +208,200 @@ ExpressionPtr Parser::parseUnaryPrefixOperation() {
   }
 }
 
-Expr Parser::ParseBinaryOperation(Expr left) {
-  Token temp_prev = previous_token;
-  Token temp = current_token;
-  TokenType type = current_token.Type();
-  NextToken();  // operator
-  if (Token::IsAssignOp(type)) {
-    return ParseAssignment(left, temp);
-  } else if (Token::IsBinaryOp(type)) {
+ExpressionPtr Parser::parseBinaryOperation(ExpressionPtr& left) {
+  TokenType type = currentToken();
+  Token op = current_token;
+  nextToken();  // operator
+  if (Token::isAssignOp(type)) {
+    return std::make_unique<Assignment>(left, op, parseExpression());
+  } else if (Token::isBinaryOp(type)) {
     // 1 if right associative, 0 if left.
     // AND and OR are constructed as right associative so that when
     // left operand is false, the entire right operand chain can be short
     // circuited. The logical opertors are associative so the evaluated value is
     // of course the same anyway.
     int associativity =
-        type == EXP || type == AND || type == OR || type == ASSIGN ? 1 : 0;
-    auto right = ParseExpression(Token::Precedence(type) - associativity);
-
-    /*
-    Right operand of . operator has to be an identifier.
-    Left operand of . operator can be a
-    function call, identifier or another binary operation with . as operator
-
-    Note that if it's a binary operation, the UnexpectedToken report may be a
-    bit off, might fix.
-    */
-
-    if (type == PERIOD) {
-      if (!right->IsIdentifier()) {
-        UnexpectedToken(previous_token);
-      } else if (!left->IsIdentifier() && !left->IsBinaryOperation() &&
-                 !left->IsThis() && !left->IsSuper() && !left->IsCall()) {
-        UnexpectedToken(temp_prev);
-      }
-    }
-    TransformBinOpWithNumberLiterals(left, right, temp, Loc());
-    return left;
+        (type == TokenType::EXP || type == TokenType::AND ||
+                 type == TokenType::OR || type == TokenType::ASSIGN
+             ? 1
+             : 0);
+    auto right = parseExpression(Token::precedence(type) - associativity);
+    return std::make_unique<BinaryOperation>(left, op, right);
+  } else {
+    // No binary operator, so must be some postfix operator.
+    return parseUnaryPostfixOperation(left, op);
   }
+}
 
-  // unary postfix operators
-  switch (temp.Type()) {
-    // call indicated by '('
-    case LPAREN: {
-      CallType type;
-      if (left->IsIdentifier()) {
-        type = CallType::NAMED;
-      } else if (left->IsBinaryOperation() &&
-                 left->AsBinaryOperation()->IsMemberAccess()) {
-        type = CallType::METHOD;
+ExpressionPtr Parser::parseUnaryPostfixOperation(ExpressionPtr& left,
+                                                 const Token& tok) {
+  // Unary postfix operators
+  switch (tok.type()) {
+    case TokenType::AMPERSAND:
+      // "&" means it's a async function call (run in seperate thread)
+      // Todo, create different AST nodes for concurrent/normal call and handle
+      // it here. (or maybe just introdude it as a call type).
+      // Currently does the same as a normal call.
+      if (peek() == TokenType::LPAREN) {
+        nextToken();
+        return parseCall(left);
       }
-      // can be removed
-      else if (left->IsUnaryOperation() &&
-               left->AsUnaryOperation()->IsNewOperator()) {
-        type = CallType::NEW_OBJ;
-      }
-      // todo: super and this call
-      else if (left->IsSuper()) {
-        type = CallType::SUPER;
-      } else if (left->IsSuper()) {
-        type = CallType::THIS;
-      } else {
-        // If this is reached, it's an anonymous call [expr]()
-        type = CallType::ANONYMOUS;
-      }
-      return ParseCall(left, type);
-    }
-    case RSB:
-      // TODO: e.g. array indexing []
       break;
-    case INCR:
-    case DECR:
-      return make_shared<UnaryOperation>(temp, left, true /* postfix */);
+      // "(" means it's a norma function call
+    case TokenType::LPAREN:
+      return parseCall(left);
+    case TokenType::LSB: {
+      // Array indexing [expr]
+      auto expr = std::make_unique<ArrayAccess>(left, parseExpression());
+      consume(TokenType::LSB, "Expected ']'");
+      return expr;
+    }
+    case TokenType::INCR:
+    case TokenType::DECR:
+      return std::make_unique<UnaryOperation>(std::move(left), tok,
+                                              true /* postfix */);
+    default:
+      break;
   }
-
-  UnexpectedToken(previous_token);
-  NextToken();  // THIS COULD BE A PROBLEM (if a weird error happens, check
-                // this)
-  return make_shared<NullExpression>();
+  unexpectedToken(previous_token);
+  nextToken();  // maybe problem
+  return std::make_unique<NullExpression>();
 }
 
-Expr Parser::ParseCall(Expr left, CallType type) {
-  /*
-  if (!left->IsValidReferenceExpression()) {
-          err->ErrorAt(current_token.Location(), "Cannot be called");
-          while (current_token.Type() != RPAREN) NextToken();
-          NextToken();
-          return make_shared<NullExpression>();
-  }
-  */
+ExpressionPtr Parser::parseCall(ExpressionPtr& left) {
   // parse arguments for the call
-  std::vector<Expr> args;
-  if (current_token.Type() != RPAREN) {
+  CallPtr call = std::make_unique<Call>(left);
+  if (currentToken() != TokenType::RPAREN) {
     do {
-      args.push_back(ParseExpression());
-    } while (Match(COMMA));
+      call->addArgument(parseExpression());
+    } while (match(TokenType::COMMA));
   }
-
-  Consume(RPAREN, "Expected ')'");
-  return make_shared<Call>(Call(left, args, type));
+  consume(TokenType::RPAREN, "Expected ')'");
+  return call;
 }
 
-Expr Parser::ParseAssignment(Expr left, const Token& tok) {
-  // could potentially check LHS here for lvalue.
-  // But might just do it during AST visiation?
-  Expr expr = ParseExpression();
-  // ExpectEndOfStatement("Expected end of input"); is checked already in parse
-  // statement right?
-  return make_shared<Assignment>(left, tok, expr);
-}
-
-Fn Parser::ParseFunctionLiteral(std::string name, FunctionType type) {
-  Consume(LPAREN, "Expected '('");
+FunctionLiteralPtr Parser::parseFunctionLiteral(std::string_view name,
+                                                FunctionType type) {
+  consume(TokenType::LPAREN, "Expected '('");
   std::vector<Identifier> args;
-  if (current_token.Type() != RPAREN) {
+  if (currentToken() != TokenType::RPAREN) {
     do {
       args.push_back(Identifier(current_token));
-      Consume(SYMBOL, "Not a valid function argument identifier");
-    } while (Match(COMMA));
+      consume(TokenType::SYMBOL, "Not a valid function argument identifier");
+    } while (match(TokenType::COMMA));
   }
 
-  Consume(RPAREN, "Expected ')'");
-  auto function_block = ParseBlock();
-  return make_shared<FunctionLiteral>(name, args, function_block, type);
+  consume(TokenType::RPAREN, "Expected ')'");
+  BlockPtr function_block = parseBlock();
+  return std::make_unique<FunctionLiteral>(type, name, args, function_block);
 }
 
 /* ----------- Expression end ------------- */
 
 /* ----------- Statements ----------------- */
 
-Stmt Parser::parse() {
-  auto program = std::make_unique<FunctionLiteral>(
-      FunctionType::top_level, "@main",
-      {Token(TokenType::SYMBOL, "argc"), Token(TokenType::SYMBOL, "argv")},
-      main_body);
+NodePtr Parser::parse() {
+  Identifier argc(Token(TokenType::SYMBOL, std::string_view("argc")));
+  Identifier argv(Token(TokenType::SYMBOL, std::string_view("argv")));
+  std::vector<Identifier> main_args = {argc, argv};
+  BlockPtr main_block = std::make_unique<Block>();
   while (currentToken() != TokenType::END) {
-    Stmt st = parseStatement();
-    if (st != nullptr) {
-      program->addStatement(st);
-    }
+    addStatement(main_block);
   }
-  return program;
-}
-
-StatementPtr Parser::parseStatement() {
-  StatementPtr stmt;
-  switch (currentToken()) {
-    case TokenType::LCB: {
-      stmt = std::make_unique<Block>();
-      parseBlock(stmt);
-      break;
-    }
-    case TokenType::WHILE: {
-      stmt = std::make_unique<WhileStatement>();
-      parseWhileStatement(stmt);
-      break;
-    }
-    case TokenType::IF: {
-      stmt = std::make_unique<IfStatement>();
-      parseIfStatement(stmt);
-      break;
-    }
-    case TokenType::PRINT: {
-      stmt = std::make_unique<PrintStatement>();
-      parseSingleExpressionStatement<PrintStatement>(stmt);
-      break;
-    }
-    case TokenType::RETURN {
-      stmt = std::make_unique<ReturnStatement>();
-      ParseSingleExpressionStatement<ReturnStatement>(stmt);
-      break;
-    }:
-    case TokenType::FUNCTION: {
-      stmt = std::make_unique<Functiondeclaration>(stmt);
-      // If there's no symbol it's anonymous, which is handled in
-      // ParseExpression()
-      if (peek() == TokenType::SYMBOL)
-        parseFunctionDeclaration(FunctionType::named);
-      break;
-    }
-
-    default:
-      // if no valid start of statement then it's an expression
-      stmt = std::make_unique<ExpressionStatement>(parseExpression());
-      expectEndOfStatement("Expected end of expression statement");
-  }
-  return stmt;
-}
-
-void Parser::parseBlock(BlockPtr& block) {
-  Consume(LCB, "Expected { for start of block.");
-  while (currentToken() != TokenType::RCB && currentToken() != TokenType::END) {
-    if (st != nullptr) block->addStatement(st);
-  }
-  Consume(RCB, "Expected } after block.");
-}
-
-Stmt Parser::ParseFunctionDeclaration(FunctionType type) {
-  NextToken();  // function
-  Token name = current_token;
-  Consume(SYMBOL, "Expected function name.");
-  auto fn = ParseFunctionLiteral(name.getValue().AsString(), type);
-  return make_shared<FunctionDeclaration>(name, fn);
-}
-
-Stmt Parser::ParseIfStatement() {
-  NextToken();  // if
-  Consume(LPAREN, "Expected ( after if keyword");
-  auto condition = ParseExpression();
-  Consume(RPAREN, "Expected ) before end of input");
-  auto if_block = ParseBlock();
-  std::shared_ptr<Block> else_block = nullptr;
-  if (Match(ELSE)) {
-    else_block = ParseBlock();
-  }
-  return make_shared<IfStatement>(condition, if_block, else_block);
-}
-
-Stmt Parser::ParseWhileStatement() {
-  NextToken();  // while
-  Consume(LPAREN, "Expected ( after while keyword");
-  auto condition = ParseExpression();
-  Consume(RPAREN, "Expected ) before end of input");
-  auto block = ParseBlock();
-  return make_shared<WhileStatement>(condition, block);
+  return std::make_unique<FunctionLiteral>(
+      FunctionType::top_level, "@main_function", main_args, main_block);
 }
 
 // print/return
 template <class T>
-Stmt Parser::ParseSingleExpressionStatement() {
-  Token temp = current_token;
-  NextToken();  // keyword
-  auto st = make_shared<T>(temp, ParseExpression());
-  ExpectEndOfStatement("Expected end of statement");
-  return st;
+StatementPtr Parser::parseSingleExpressionStatement() {
+  nextToken();  // keyword
+  auto stmt = std::make_unique<T>(parseExpression());
+  expectEndOfStatement("Expected end of statement");
+  return stmt;
 }
 
-Stmt Parser::ParseVariableDeclaration() {
-  NextToken();  // var/field
-  Token name = current_token;
-  if (Peek() != ASSIGN) {
-    Consume(SYMBOL, "Expected a name for variable declaration");
-    ExpectEndOfStatement("Expected end of variable declaration");
+StatementPtr Parser::parseStatement() {
+  switch (currentToken()) {
+    case TokenType::LCB:
+      return parseBlock();
+    case TokenType::WHILE:
+      return parseWhileStatement();
+    case TokenType::IF:
+      return parseIfStatement();
+    case TokenType::PRINT:
+      return parseSingleExpressionStatement<PrintStatement>();
+    case TokenType::RETURN:
+      return parseSingleExpressionStatement<ReturnStatement>();
+    case TokenType::SYMBOL:
+      if (previousToken() == TokenType::FUNCTION) {
+        nextToken();
+        return std::make_unique<ExpressionStatement>(parseFunctionLiteral(
+            previous_token.asString(), FunctionType::named));
+      }
+      break;
+    case TokenType::FUNCTION:
+      // If there's no symbol it's anonymous, which is handled in
+      // parseExpression()
+      if (peek() == TokenType::SYMBOL) return parseFunctionDeclaration();
+      break;
+    default:
+      break;
   }
-  return make_shared<VariableDeclaration>(name);
+  auto expr = std::make_unique<ExpressionStatement>(parseExpression());
+  expectEndOfStatement("Expected end of expression statement");
+  return expr;
 }
 
-Stmt Parser::ParseClassDeclaration() {
-  NextToken();  // class
-  auto symbol = Identifier(current_token);
-  Consume(SYMBOL, "Expected class name");
-
-  Expr super = make_shared<NullExpression>();
-  if (current_token.Type() == INHERITS) {
-    NextToken();  // inherits
-    super = make_shared<Identifier>(current_token);
-    Consume(SYMBOL, "Expected super name");
+void Parser::addStatement(BlockPtr& block) {
+  CHECK(block != nullptr);
+  StatementPtr stmt = parseStatement();
+  if (stmt != nullptr) {
+    if (stmt->isFunctionDeclaration())
+      // Add the declaration.
+      block->addDeclaration(stmt);
+    else
+      block->addStatement(stmt);
   }
+}
 
-  Consume(LCB, "Expected '{'");
-  auto class_block = make_shared<Block>();
-  bool needs_constructor = true;
-  // when class block is visited, the constructor function BytecodeChunk will be
-  // added to the code stack!!!!
-  while (current_token.Type() != RCB && current_token.Type() != END) {
-    switch (current_token.Type()) {
-      case METHOD:
-        class_block->AddStatement(
-            ParseFunctionDeclaration(FunctionType::method));
-        break;
-      case CONSTRUCTOR: {
-        needs_constructor = false;
-        NextToken();  // constructor
-        auto fn =
-            ParseFunctionLiteral(symbol.Name(), FunctionType::constructor);
-        class_block->AddStatement(
-            make_shared<FunctionDeclaration>(symbol.getToken(), fn));
-      } break;
-      case FIELD:
-        class_block->AddStatement(ParseVariableDeclaration());
-        // could be an issue if theres a symbol at start of next statement?
-        // (cant be the case in class i guess?)
-        if (current_token.Type() == SYMBOL) {
-          Token temp = current_token;  // symbol
-          NextToken();
-          Token assign_tok = current_token;
-          Consume(ASSIGN,
-                  "Expected '=' token for direct intialization in class");
-          Expr assign =
-              ParseAssignment(make_shared<Identifier>(temp), assign_tok);
-          class_block->AddStatement(make_shared<ExpressionStatement>(assign));
-        }
-        break;
-      default:
-        err->ErrorAt(current_token.getLocation(),
-                     "Invalid start of statement in class block");
-        // Synchronize();
-        break;
-    }
+BlockPtr Parser::parseBlock() {
+  consume(TokenType::LCB, "Expected { for start of block.");
+  auto block = std::make_unique<Block>();
+  while (currentToken() != TokenType::RCB && currentToken() != TokenType::END) {
+    addStatement(block);
   }
+  consume(TokenType::RCB, "Expected } after block.");
+  return block;
+}
 
-  Consume(RCB, "Expected '}'");
+StatementPtr Parser::parseFunctionDeclaration() {
+  nextToken();  // function
+  // Expect but don't consume, symbol is needed when function literal is parsed
+  expect(TokenType::SYMBOL, "Expected function name.");
+  return std::make_unique<FunctionDeclaration>(current_token);
+}
 
-  if (needs_constructor) {
-    // this can be done better, it's essentially an empty method with the name
-    // of the class.
-    class_block->AddStatement(make_shared<FunctionDeclaration>(
-        symbol.getToken(),
-        make_shared<FunctionLiteral>(symbol.Name(), std::vector<Identifier>(),
-                                     make_shared<Block>(),
-                                     FunctionType::constructor)));
+StatementPtr Parser::parseIfStatement() {
+  nextToken();  // if
+  consume(TokenType::LPAREN, "Expected ( after if keyword");
+  auto condition = parseExpression();
+  consume(TokenType::RPAREN, "Expected ) before end of input");
+  BlockPtr if_block = parseBlock();
+  BlockPtr else_block = nullptr;
+  if (match(TokenType::ELSE)) {
+    else_block = parseBlock();
   }
+  return std::make_unique<IfStatement>(condition, if_block, else_block);
+}
 
-  return make_shared<ClassDeclaration>(symbol, class_block, super);
+StatementPtr Parser::parseWhileStatement() {
+  nextToken();  // while
+  consume(TokenType::LPAREN, "Expected ( after while keyword");
+  auto condition = parseExpression();
+  consume(TokenType::RPAREN, "Expected ) before end of input");
+  BlockPtr block = parseBlock();
+  return std::make_unique<WhileStatement>(condition, block);
 }
 
 }  // namespace linaro

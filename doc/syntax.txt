@@ -15,15 +15,66 @@ var_name = value
 
 - FUNCTIONS
 
-function name() {}
+fn name(x, y) expr
+E.g: fn f(x, y) cos(x) * sin(PI*y)
 
-//need a thread pool to keep track of threads. There will be a built in type "Thread". 
-// Each thread definition (just function basically) is put in a thread pool. If you want 
-// to do a "join" on the thread, there will be a bytecode that simply finds it in the 
-// thread pool and does what it needs to. Thread type can contain info about if it is 
-// running etc. (or just store std::thread which keeps this info already i guess?) 
+Compound function:
+fn name(x, y) {
+    statements
+}
 
-thread name() {}
+Anonymous (name optional):
+
+x = fn(x, y) expr
+x = fn(x, y) {
+    statements
+}
+
+E.g:
+name("some string arg", fn(x, y) {
+    ret x + y
+})
+
+Calling anonymous with vs without name:
+
+Without name: A recursive call can be made by capturing the variable it was
+assigned to (but it might not have been assigned to anything, in which case it
+doesnt work at all). Recursion in a named function will happen the same way,
+the name is resolved to the outer scope, and must therefore be captured.
+
+With name: A recursive call can be made at runtime by simply putting the
+currently executing closure on TOS and recalling it (probably faster).
+bytecode suggestion: current_closure
+This puts current closure on TOS when looking up anonymous name
+Basically: 
+
+var x = fn test() { test() }
+
+When test is resolved inside of the anonymous function it first looks
+in it's symbol table, if not found then it checks if it is equal to 
+the name of the current function literal being compiled, in which case
+load bytecode current_closure. If not found, look in enclosing scope etc...
+
+Calling:
+
+name(x, y) // invokes name synchronously (normal function call)
+name&(x, y) // invokes name in a seperate thread
+
+Idea about declaring as thread (if it is useful to know about compile time for
+some reason):
+
+// Function that runs in a separate thread
+name(x, y) &= {
+
+}
+
+Threads theorizing:
+Need a thread pool to keep track of threads. There will be a built in type "Thread". 
+Each thread definition (just function basically) is put in a thread pool. If you want 
+to do a "join" on the thread, there will be a bytecode that simply finds it in the 
+thread pool and does what it needs to. Thread type can contain info about if it is 
+running etc. (or just store std::thread which keeps this info already i guess?) 
+
 
 - CONDITIONAL CONTROL FLOW
 

@@ -7,13 +7,11 @@
 
 namespace linaro {
 
-Lexer::Lexer(const char* filename) {
-  m_source_code = readFile(filename);
+Lexer::Lexer(const char* filename) : m_source_code{readFile(filename)} {
   initLexer(filename);
 }
 
-Lexer::Lexer(const std::string& source) {
-  m_source_code = source;
+Lexer::Lexer(const std::string& source) : m_source_code{source} {
   initLexer("VM");
 }
 
@@ -28,6 +26,33 @@ void Lexer::lexicalError(const Location& loc, const char* format, ...) {
   va_start(args, format);
   Error::reportErrorAt(loc, Error::LexicalError, format, args);
   va_end(args);
+}
+
+char Lexer::peek(unsigned int distance) {
+  return m_source_code[current + distance];
+}
+
+bool Lexer::isDigit(char d) { return d >= '0' && d <= '9'; }
+bool Lexer::isAlpha(char d) {
+  return (d >= 'a' && d <= 'z') || (d >= 'A' && d <= 'Z') || (d == '_');
+}
+
+size_t Lexer::offsetFromCursor() const { return (start + current) - cursor; }
+void Lexer::syncCursor() { cursor += offsetFromCursor(); }
+Token Lexer::constructToken(TokenType type) {
+  switch (type) {
+    case TokenType::STRING:
+    case TokenType::SYMBOL:
+    case TokenType::NUMBER:
+    case TokenType::UNKNOWN: {
+      // +1 and -2 for avoiding the quotation marks
+      std::string_view sv{cursor, offsetFromCursor()};
+      syncCursor();
+      return Token(type, current_location, sv);
+    }
+    default:
+      return Token(type, current_location);
+  }
 }
 
 // skips whitespace and also checks if a '\n' was amongst the skipped
@@ -113,7 +138,12 @@ Token Lexer::getNextToken() {
       case ':':
         advance();
         return constructToken(TokenType::COLON);
-
+      case '#':
+        advance();
+        return constructToken(TokenType::HASH);
+      case '&':
+        advance();
+        return constructToken(TokenType::AMPERSAND);
       // EOS (semicolon).
       case ';':
         while (current_char == ';') advance();
@@ -210,12 +240,12 @@ Token Lexer::identifier() {
 
   // If it's a reserved keyword:
   if (result == "if") return constructToken(TokenType::IF);
+  if (result == "fn") return constructToken(TokenType::FUNCTION);
   if (result == "else") return constructToken(TokenType::ELSE);
   if (result == "for") return constructToken(TokenType::FOR);
   if (result == "while") return constructToken(TokenType::WHILE);
   if (result == "print") return constructToken(TokenType::PRINT);
-  if (result == "function") return constructToken(TokenType::FUNCTION);
-  if (result == "return") return constructToken(TokenType::RETURN);
+  if (result == "ret") return constructToken(TokenType::RETURN);
   if (result == "and") return constructToken(TokenType::AND);
   if (result == "or") return constructToken(TokenType::OR);
   if (result == "class") return constructToken(TokenType::CLASS);
@@ -249,7 +279,8 @@ Token Lexer::linaroString() {
     advance();
   }
 
-  return constructToken(TokenType::STRING);
+  return Token(TokenType::STRING,
+               std::string_view{cursor + 1, offsetFromCursor() - 2});
 }
 
 }  // namespace linaro

@@ -23,28 +23,28 @@ class Block : public Statement {
   const auto& getDeclarations() const { return declarations; }
   bool isEmpty() const { return statements.empty(); }
 
-  void addStatement(StatementPtr statement) {
+  void addStatement(StatementPtr& statement) {
     statements.push_back(std::move(statement));
   }
 
-  void addDeclaration(StatementPtr declaration) {
+  void addDeclaration(StatementPtr& declaration) {
     declarations.push_back(std::move(declaration));
   }
 
   void visit(NodeVisitor& v) override { v.visitBlock(*this); }
   void printNode() const override {
-    std::cout << "Block[\nDeclarations:\n";
+    std::cout << "Block: {\n--- Declarations ---\n";
     for (const auto& stat : declarations) {
       stat->printNode();
       std::cout << '\n';
     }
 
-    std::cout << "Statements:\n";
+    std::cout << "--- Statements ---\n";
     for (const auto& stat : statements) {
       stat->printNode();
       std::cout << '\n';
     }
-    std::cout << "] //end of compound\n";
+    std::cout << "} // End of Block\n";
   }
 
  private:
@@ -68,12 +68,9 @@ class ExpressionStatement : public Statement {
       : Statement(nExpressionStatement), m_expr(std::move(expr)) {}
 
   Expression* expr() const { return m_expr.get(); }
+  void addExpression(ExpressionPtr& expr) { m_expr = std::move(expr); }
   void visit(NodeVisitor& v) override { v.visitExpressionStatement(*this); }
-  void printNode() const override {
-    std::cout << "Expr(";
-    m_expr->printNode();
-    std::cout << ")";
-  }
+  void printNode() const override { m_expr->printNode(); }
 
  private:
   ExpressionPtr m_expr;
@@ -84,69 +81,6 @@ class EmptyStatement : public Statement {
   EmptyStatement() : Statement(nEmptyStatement) {}
   void visit(NodeVisitor& v) override { v.visitEmptyStatement(*this); }
   void printNode() const override { std::cout << "EmptyStatement\n"; }
-};
-
-class ClassDeclaration : public Statement {
- public:
-  ClassDeclaration(const Identifier& this_, BlockPtr class_block,
-                   ExpressionPtr superclass)
-      : Statement(nClassDeclaration),
-        m_this(this_),
-        m_class_block(std::move(class_block)),
-        m_superclass(std::move(superclass)) {}
-
-  Expression* super() const { return m_superclass.get(); }
-  const Identifier& getIdentifier() const { return m_this; }
-  Block* getBlock() const { return m_class_block.get(); }
-
-  void visit(NodeVisitor& v) override { v.visitClassDeclaration(*this); }
-  void printNode() const override {
-    //    std::cout << "Class(";
-    //    this_name.printNode();
-    //    if (!m_superclass->isNullExpression()) {
-    //      std::cout << ", ";
-    //      std::cout << "Inherits from: ";
-    //      m_superclass->PrintNode();
-    //    }
-    //    std::cout << ") { " << std::endl;
-    //    m_class_block->PrintNode();
-    //    std::cout << "} //End of class block" << std::endl;
-  }
-
- private:
-  const Identifier m_this;
-  BlockPtr m_class_block;
-  // identifier or null expression if there is none
-  ExpressionPtr m_superclass;
-};
-
-class FunctionDeclaration : public Statement {
- public:
-  FunctionDeclaration(const Token& name)
-      : Statement(nFunctionDeclaration), m_function_name(name) {}
-
-  const Location& loc() const { return m_function_name.getLocation(); }
-  std::string_view name() const { return m_function_name.asString(); }
-
-  void visit(NodeVisitor& v) override { v.visitFunctionDeclaration(*this); }
-  void printNode() const override {
-    std::cout << "FunctionDeclaration(";
-    m_function_name.asString();
-    std::cout << ")";
-  }
-
- private:
-  // for id location
-  Token m_function_name;
-  // Big note: The function literal is now removed from here. It should simply
-  // be parsed seperately and put in a expression statement. This means we can
-  // visit all declarations and therefor deal with the forward declaration
-  // problem. The function literal is then visited as a seperate statement. The
-  // first thing that is done when visiting the FunctionLiteral is to look up
-  // the name of the function in the symbol table, and there it will find THIS
-  // declaration. From there, it gets it's index where it should put itself into
-  // the const pool (currently a dummy value).
-  // FunctionLiteralPtr m_func;
 };
 
 class ReturnStatement : public Statement {
@@ -185,18 +119,17 @@ class PrintStatement : public Statement {
   ExpressionPtr print_expr;
 };
 
-class VariableDeclaration : public Statement {
+class FunctionDeclaration : public Statement {
  public:
-  VariableDeclaration(const Token& symbol)
-      : Statement(nVariableDeclaration), m_symbol(symbol) {}
+  FunctionDeclaration(const Token& symbol)
+      : Statement(nFunctionDeclaration), m_symbol(symbol) {}
 
-  VariableDeclaration* asVariableDeclaration() { return this; }
   const Token& symbol() const { return m_symbol; }
   const Location& loc() const { return m_symbol.getLocation(); }
 
-  void visit(NodeVisitor& v) override { v.visitVariableDeclaration(*this); }
+  void visit(NodeVisitor& v) override { v.visitFunctionDeclaration(*this); }
   void printNode() const override {
-    std::cout << "VarDecl(";
+    std::cout << "FunctionDeclaration(";
     m_symbol.asString();
     std::cout << ")";
   }
@@ -207,8 +140,8 @@ class VariableDeclaration : public Statement {
 
 class IfStatement : public Statement {
  public:
-  IfStatement(ExpressionPtr condition, BlockPtr then_block,
-              BlockPtr else_block = nullptr)
+  IfStatement(ExpressionPtr& condition, BlockPtr& then_block,
+              BlockPtr& else_block)
       : Statement(nIfStatement),
         m_condition(std::move(condition)),
         m_then_block(std::move(then_block)),
@@ -246,7 +179,7 @@ class IfStatement : public Statement {
 
 class WhileStatement : public Statement {
  public:
-  WhileStatement(ExpressionPtr boolean_expr, BlockPtr while_block)
+  WhileStatement(ExpressionPtr& boolean_expr, BlockPtr& while_block)
       : Statement(nWhileStatement),
         m_boolean_expr(std::move(boolean_expr)),
         m_while_block(std::move(while_block)) {}

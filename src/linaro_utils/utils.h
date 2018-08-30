@@ -36,6 +36,7 @@ class Error {
                             const char *format, va_list args) {
     std::cerr << errorToString[(int)type] << loc << " ";
     vfprintf(stderr, format, args);
+    std::cerr << '\n';
   }
 };
 

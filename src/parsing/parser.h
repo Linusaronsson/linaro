@@ -12,9 +12,9 @@ namespace linaro {
 
 class Parser {
  public:
-  Parser(const Lexer& lex);
+  Parser(const char* filename);
   ~Parser() {}
-  FunctionLiteralPtr parse();
+  NodePtr parse();
 
  private:
   void syntaxError(const Location& loc, const char* format, ...);
@@ -27,6 +27,7 @@ class Parser {
 
   void unexpectedToken(const Token& tok);
   bool match(TokenType expected);
+  void expect(TokenType expected, const char* error_message);
   void consume(TokenType type, const char* error_message);
   void expectEndOfStatement(const char* error_message);
   void synchronize();
@@ -43,31 +44,34 @@ class Parser {
   // depending on the current token.
   StatementPtr parseStatement();
 
-  void parseBlock(StatementPtr& stmt);
-  void parseIfStatement(StatementPtr& stmt);
-  void parseWhileStatement(StatementPtr& stmt);
-  void parseVariableDeclaration(StatementPtr& stmt);
+  // Helper method for parsing and adding a statement to a block
+  void addStatement(BlockPtr& block);
+
+  // Statements
+  BlockPtr parseBlock();
+  StatementPtr parseIfStatement();
+  StatementPtr parseWhileStatement();
 
   void transformBinOpWithNumberLiterals(Expression** x, Expression* y,
                                         const Token& op, const Location& loc);
 
   // return/print
   template <class T>
-  void parseSingleExpressionStatement(StatementPtr& stmt);
+  StatementPtr parseSingleExpressionStatement();
 
   // Declarations (that are visited before other statements in AST)
-  void parseFunctionDeclaration(StatementPtr& stmt);
-  void parseClassDeclaration(StatementPtr& stmt);
+  StatementPtr parseFunctionDeclaration();
+  //  void parseClassDeclaration(StatementPtr& stmt);
 
   // Expression evaluation
-  void parseExpression(ExpressionPtr& arg, int precedence);
-  void parseUnaryPrefixOperation(ExpressionPtr& left);
-  void parseBinaryOperation(ExpressionPtr& left);  // handles postfix too
-  void parseCall(ExpressionPtr& left, CallType type);
-  // ExpressionPtr parseMemberExpression(ExpressionPtr left);
-  // ExpressionPtr parseAssignment(ExpressionPtr left, const Token& tok);
-  void parseFunctionLiteral(FunctionLiteralPtr& fn, std::string name,
-                            FunctionType type);
+  ExpressionPtr parseExpression(int precedence);
+  ExpressionPtr parseUnaryPrefixOperation();
+  ExpressionPtr parseBinaryOperation(ExpressionPtr& left);
+  ExpressionPtr parseUnaryPostfixOperation(ExpressionPtr& left,
+                                           const Token& tok);
+  ExpressionPtr parseCall(ExpressionPtr& left);
+  FunctionLiteralPtr parseFunctionLiteral(std::string_view name,
+                                          FunctionType type);
 
   static const int buffer_size = 6;
   Lexer m_lex;

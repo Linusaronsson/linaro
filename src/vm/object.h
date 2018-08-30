@@ -42,7 +42,7 @@ class Object {
 
 class String : public Object {
  public:
-  String(const std::string& str) : Object{nString}, m_str{str} {}
+  explicit String(std::string_view str) : Object{nString}, m_str{str} {}
   bool canBeNumber() const override;
   double asNumber() const override;
   bool asBoolean() const override { return !m_str.empty(); }

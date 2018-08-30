@@ -14,18 +14,16 @@
 #include "parsing/token.h"
 #include "vm/value.h"
 
-//#define DEBUG_LEXER
+#define DEBUG_PARSER
 using namespace linaro;
 
 int main() {
   //  uint64_t t1 = 0;
   clock_t begin = clock();
-  std::string test = "FFFFFFFFFFFFFFFFFFoFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
-  std::cout << test << std::endl;
 #ifdef DEBUG_LEXER
   Lexer lex("script.lo");
   Token t = lex.nextToken();
-  while (t.type() != Token::END) {
+  while (t.type() != TokenType::END) {
     std::cout << t << std::endl;
     t = lex.nextToken();
   }
@@ -34,6 +32,10 @@ int main() {
 
 #ifdef DEBUG_PARSER
   // Parser debug code here
+  Parser parser("script.lo");
+  auto AST = parser.parse();
+
+  AST->printNode();
 #endif
 
 #ifdef DEBUG_CODE_GENERATOR

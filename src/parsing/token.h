@@ -28,6 +28,8 @@ namespace linaro {
   T(CONDITIONAL, "?", 3)                        \
   T(INCR, "++", 16)                             \
   T(DECR, "--", 16)                             \
+  T(HASH, "#", 16)      /* Func call sync */    \
+  T(AMPERSAND, "&", 16) /* Func call async  */  \
                                                 \
   /* Assignment operators.. */                  \
   T(ASSIGN, "=", 2)                             \
@@ -56,12 +58,12 @@ namespace linaro {
                                                 \
   /* Keywords */                                \
   K(BREAK, "break", 0)                          \
+  K(FUNCTION, "fn", 0)                          \
   K(ELSE, "else", 0)                            \
   K(FOR, "for", 0)                              \
-  K(FUNCTION, "function", 0)                    \
   K(IF, "if", 0)                                \
   K(NEW, "new", 15)                             \
-  K(RETURN, "return", 0)                        \
+  K(RETURN, "ret", 0)                           \
   K(THIS, "this", 0)                            \
   K(SUPER, "super", 0)                          \
   K(WHILE, "while", 0)                          \
@@ -109,6 +111,8 @@ class Token {
   // For string literals, symbols and numbers.
   Token(TokenType type, const Location& location, const std::string_view& str)
       : m_type{type}, m_location{location}, m_str{str} {}
+  Token(TokenType type, const std::string_view& str)
+      : m_type{type}, m_str{str} {}
 
   ~Token() {}
 
@@ -123,21 +127,21 @@ class Token {
 
   // E.g token LPAREN becomes the strin "LPAREN"
   static const char* tokenName(TokenType type) {
-    CHECK(type < NUM_TOKENS);
+    CHECK(type < TokenType::NUM_TOKENS);
     return token_name[(uint8_t)type];
   }
 
   // E.g token LPAREN becomes "("
   static const char* tokenString(TokenType type) {
-    CHECK(type < NUM_TOKENS);
+    CHECK(type < TokenType::NUM_TOKENS);
     return token_string[(uint8_t)type];
   }
 
   std::string_view asString() const;
 
-  static int getPrecedence(TokenType type) {
-    CHECK(type < NUM_TOKENS);
-    return precedence[(uint8_t)type];
+  static int precedence(TokenType type) {
+    CHECK(type < TokenType::NUM_TOKENS);
+    return Precedence[(uint8_t)type];
   }
 
   static bool isLogicalOp(TokenType op) {
@@ -167,13 +171,13 @@ class Token {
       TOKENS(T, T, T)};
 #undef T
 
-#define T(type, name, precedence) #name,
+#define T(type, name, precedence) name,
   constexpr static const char* const
       token_string[(uint8_t)TokenType::NUM_TOKENS]{TOKENS(T, T, T)};
 #undef T
 
 #define T(name, string, precedence) precedence,
-  constexpr static const int8_t precedence[(uint8_t)TokenType::NUM_TOKENS]{
+  constexpr static const int8_t Precedence[(uint8_t)TokenType::NUM_TOKENS]{
       TOKENS(T, T, T)};
 #undef T
 

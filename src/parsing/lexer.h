@@ -17,6 +17,7 @@ class Lexer {
   ~Lexer() {}
   Location& getLocation() { return current_location; }
   Token nextToken();
+  void readSource(const char* file) { m_source_code = readFile(file); }
 
  private:
   void initLexer(const char* filename);
@@ -32,33 +33,13 @@ class Lexer {
 
   void advance(unsigned int steps = 1);
   bool skipWhitespace();
-  inline char peek(unsigned int distance = 1) {
-    return m_source_code[current + distance];
-  }
-
-  inline bool isDigit(char d) { return d >= '0' && d <= '9'; }
-  inline bool isAlpha(char d) {
-    return (d >= 'a' && d <= 'z') || (d >= 'A' && d <= 'Z') || (d == '_');
-  }
-
+  inline char peek(unsigned int distance = 1);
+  inline bool isDigit(char d);
+  inline bool isAlpha(char d);
   Token getNextToken();
-  inline size_t offsetFromCursor() const { return (start + current) - cursor; }
-  inline void syncCursor() { cursor += offsetFromCursor(); }
-
-  inline Token constructToken(TokenType type) {
-    switch (type) {
-      case TokenType::STRING:
-      case TokenType::SYMBOL:
-      case TokenType::NUMBER:
-      case TokenType::UNKNOWN: {
-        std::string_view sv{cursor, offsetFromCursor()};
-        syncCursor();
-        return Token(type, current_location, sv);
-      }
-      default:
-        return Token(type, current_location);
-    }
-  }
+  inline size_t offsetFromCursor() const;
+  inline void syncCursor();
+  inline Token constructToken(TokenType type);
 
   std::string m_source_code;
   const char* start;
@@ -66,7 +47,7 @@ class Lexer {
   size_t current = 0;
   char current_char;
   Location current_location;
-};
+};  // namespace linaro
 
 }  // namespace linaro
 
