@@ -14,7 +14,7 @@ class Parser {
  public:
   Parser(const char* filename);
   ~Parser() {}
-  NodePtr parse();
+  FunctionLiteralPtr parse();
 
  private:
   void syntaxError(const Location& loc, const char* format, ...);

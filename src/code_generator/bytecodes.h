@@ -3,6 +3,8 @@ BYTECODE(pop)
 BYTECODE(dup)
 
 /* Arithmetic */
+BYTECODE(incr)
+BYTECODE(decr)
 BYTECODE(add)
 BYTECODE(sub)
 BYTECODE(mod)

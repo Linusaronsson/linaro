@@ -4,9 +4,27 @@
 #include <iostream>
 
 #include "../linaro_utils/common.h"
-#include "compiler.h"
+#include "code_generator.h"
 
 namespace linaro {
+
+void Label::bindLabel(size_t o) {
+  CHECK(!bound && m_offset != invalidOffset);
+  m_offset = o;
+  bound = true;
+}
+
+void BytecodeChunk::patchJump(Label& label, int extra_offset) {
+  uint32_t current_offset = m_code.size() + extra_offset;
+  size_t j = label.offset();
+  // Patch jump adress
+  for (size_t i = j; i < j + 4; i++) {
+    uint8_t op = current_offset;
+    current_offset >>= 8;
+    m_code[i] = op;
+  }
+  label.bindLabel(current_offset);
+}
 
 void BytecodeChunk::disassembleChunk() const {
   std::cout << "Bytecode disassemble:\n";
@@ -53,6 +71,7 @@ int BytecodeChunk::getNumArguments(Bytecode op) const {
     case Bytecode::gload:
     case Bytecode::gstore:
     case Bytecode::call:
+    case Bytecode::call_tos:
     case Bytecode::closure:
     case Bytecode::load:
     case Bytecode::store:

@@ -22,6 +22,20 @@ const char* const bytecode_to_string[Bytecode::NUM_BYTECODES]{
 };
 #undef BYTECODE
 
+class Label {
+ public:
+  Label(size_t adress = invalidOffset) : m_offset(adress) {}
+  bool isForwardRef() const { return m_offset != invalidOffset && !bound; }
+  size_t offset() const { return m_offset; }
+  void setOffset(size_t o) { m_offset = o; }
+  void bindLabel(size_t o);
+
+ private:
+  static const size_t invalidOffset = -1;
+  bool bound = false;
+  size_t m_offset;
+};
+
 class BytecodeChunk {
  public:
   BytecodeChunk() {}
@@ -29,6 +43,7 @@ class BytecodeChunk {
   const Location& getLocation(int i) { return *m_loc[i]; }
   size_t chunkSize() const { return m_code.size(); }
   size_t currentOffset() const { return m_code.size() + 1; }
+  void patchJump(Label& label, int extra_offset = 0);
 
   // Extracting data from chunk
   inline uint8_t readByte(int i) const { return m_code[i]; }

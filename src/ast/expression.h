@@ -150,8 +150,8 @@ class Identifier : public Expression {
   bool isValidReferenceExpression() override { return true; }
 
   std::string_view name() const { return m_tok.asString(); }
-  const Token& getToken() const { return m_tok; }
-  const Location& getLocation() const { return m_tok.getLocation(); }
+  const Token& tok() const { return m_tok; }
+  const Location& loc() const { return m_tok.getLocation(); }
 
   void visit(NodeVisitor& v) override { v.visitIdentifier(*this); }
   void printNode() const override { std::cout << "Symbol(" << name() << ")"; }
@@ -170,7 +170,6 @@ class BinaryOperation : public Expression {
 
   bool isValidReferenceExpression() override;
   bool isLogicalOperation() { return Token::isLogicalOp(m_op.type()); }
-  bool isMemberAccess() { return m_op.type() == TokenType::PERIOD; }
   const Token& op() const { return m_op; }
 
   Expression* leftOperand() const { return m_left.get(); }
@@ -205,10 +204,10 @@ class UnaryOperation : public Expression {
   Expression* operand() const { return m_operand.get(); }
 
   //-, +, --, ++, !
-  bool isPrefix() { return !m_is_postfix; }
+  bool isPrefix() const { return !m_is_postfix; }
 
   //--, ++, (), []
-  bool isPostfix() { return m_is_postfix; }
+  bool isPostfix() const { return m_is_postfix; }
 
   void visit(NodeVisitor& v) override { v.visitUnaryOperation(*this); }
   void printNode() const override {
@@ -238,7 +237,8 @@ class Assignment : public Expression {
         m_op(op),
         m_right(std::move(right)) {}
 
-  const Token& getToken() const { return m_op; }
+  const Token& token() const { return m_op; }
+  const Location& loc() const { return m_op.getLocation(); }
   Expression* target() const { return m_target.get(); }
   Expression* rightOperand() const { return m_right.get(); }
 

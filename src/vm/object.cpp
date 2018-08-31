@@ -1,7 +1,5 @@
 #include "object.h"
 
-#include <iostream>
-
 #include "value.h"
 
 namespace linaro {
@@ -32,12 +30,33 @@ double String::asNumber() const {
 
 /* Function */
 
+int Function::addCapturedVariable(int index, bool is_local) {
+  for (int i = 0; i < num_captured_variables; i++) {
+    if (index == m_captured_variables[i].index &&
+        is_local == m_captured_variables[i].is_local) {
+      return i;
+    }
+  }
+  m_captured_variables.push_back({index, is_local});
+  return num_captured_variables++;
+}
+
+#ifdef DEBUG
+void Function::printCapturedVariables() {
+  std::cout << "Captured variables:\n";
+  for (const auto& ccv : m_captured_variables) {
+    std::cout << "index: " << ccv.index << " is_local: " << ccv.is_local
+              << '\n';
+  }
+}
+
 void Function::printConstants() const {
   std::cout << "Constant pool:\n";
   for (size_t i = 0; i < m_constants.size(); i++) {
     std::cout << i << ": " << m_constants[i] << '\n';
   }
 }
+#endif
 
 /* Array */
 
@@ -62,7 +81,7 @@ bool Array::asBoolean() const { return m_values[0].asNumber(); }
 std::string Array::asString() const {
   std::string res;
   for (const auto& v : m_values) {
-    res = res + v.asString(); //+ delimiter;
+    res = res + v.asString();  //+ delimiter;
   }
   return res;
 }

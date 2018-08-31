@@ -1,6 +1,7 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
+#include <iostream>
 #include <memory>
 
 #include "../code_generator/chunk.h"
@@ -8,7 +9,6 @@
 namespace linaro {
 
 class Value;
-struct CapturedVariable;
 
 #define OBJECTS(O) O(String) O(Function) O(Array) O(Closure) O(Thread)
 
@@ -63,21 +63,28 @@ struct CompilerCapturedVariable {
   bool is_local;
 };
 
+class FunctionLiteral;  // Function AST node
 class Function : public Object {
  public:
-  Function(std::string name, int depth, int args)
-      : Object{nFunction}, m_name{name}, m_depth{depth}, num_args{args} {}
-  std::string asString() const override { return m_source; }
-  size_t hash() const override { return std::hash<std::string>{}(m_source); }
+  Function(FunctionLiteral* fn_ast, std::string_view name, int num_args)
+      : Object{nFunction},
+        m_fn_ast{fn_ast},
+        m_name{name},
+        m_num_args{num_args} {}
+  std::string asString() const override { return std::string(m_name); }
+  size_t hash() const override {
+    return std::hash<std::string_view>{}(m_source);
+  }
 
-  void setLocals(int num) { num_locals = num; }
+  void setLocals(int num) { m_num_locals = num; }
   void setCode(const BytecodeChunk& c) { m_code = c; }
-  int depth() const { return m_depth; }
-  int numLocals() const { return num_locals; }
-  int numArgs() const { return num_args; }
+  void setIsCompiled(bool is_compiled) { m_is_compiled = is_compiled; }
+  int numLocals() const { return m_num_locals; }
+  int numArgs() const { return m_num_args; }
   int numCapturedVariables() const { return num_captured_variables; }
-  bool isCompiled() const { return is_compiled; }
+  bool isCompiled() const { return m_is_compiled; }
   BytecodeChunk* code() { return &m_code; }
+  FunctionLiteral* getFunctionAST() const { return m_fn_ast; }
 
   inline std::vector<Value>& constants() { return m_constants; }
   inline Value& getConstant(int i) { return m_constants[i]; }
@@ -87,22 +94,25 @@ class Function : public Object {
     return m_constants.size() - 1;
   }
 
+  auto& getCapturedVariables() const { return m_captured_variables; }
+  int addCapturedVariable(int index, bool is_local);
   CompilerCapturedVariable* getCapturedVariable(int i) {
     return &m_captured_variables[i];
   }
 
-  // Debugging function
+#ifdef DEBUG
+  void printCapturedVariables();
   void disassembleChunk() const { m_code.disassembleChunk(); }
   void printConstants() const;
+#endif
 
  private:
-  const Function* enclosing_function;
-  std::string m_name;
-  std::string m_source;
-  bool is_compiled;  // for lazy compilation
-  int m_depth;
-  int num_args;
-  int num_locals;
+  FunctionLiteral* m_fn_ast;
+  std::string_view m_name;
+  std::string_view m_source;
+  bool m_is_compiled = false;  // for lazy compilation
+  int m_num_args;
+  int m_num_locals;
   int num_captured_variables;
   BytecodeChunk m_code;
 
@@ -112,6 +122,7 @@ class Function : public Object {
   std::vector<CompilerCapturedVariable> m_captured_variables;
 };
 
+struct CapturedVariable;
 class Closure : public Object {
  public:
   Closure(Function* fn) : Object(nClosure), m_fn{fn} {}
@@ -145,10 +156,13 @@ class Array : public Object {
  public:
   // Array(std::initializer_list<Value> list);
   Array() : Object{nArray} {}
-  Array(std::vector<Value> values) : Object{nArray}, m_values{values} {}
+  Array(std::vector<Value> values)
+      : Object{nArray}, m_values{std::move(values)} {}
+
   inline void insert(const Value& val) {
     m_values.insert(m_values.begin(), val);
   }
+
   inline void append(const Value& val) { m_values.push_back(val); }
   int size() const { return m_values.size(); }
   std::vector<Value> getArray() const { return m_values; }

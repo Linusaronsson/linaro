@@ -2,11 +2,10 @@
 
 namespace linaro {
 
-int Scope::defineSymbol(const Symbol& sym) {
-  std::string name = sym.name();
-  auto it = symbol_table.find(name);
-  if (it == symbol_table.end()) {
-    symbol_table[name] = sym;
+int Scope::defineSymbol(const std::string_view& name) {
+  auto it = m_symbol_table.find(name);
+  if (it == m_symbol_table.end()) {
+    m_symbol_table[name] = m_index++;
     m_num_locals++;
     return 0;
   }
@@ -15,10 +14,10 @@ int Scope::defineSymbol(const Symbol& sym) {
   return -1;
 }
 
-Symbol* Scope::resolveSymbol(std::string name) {
-  auto it = symbol_table.find(name);
-  if (it != symbol_table.end()) {
-    return &symbol_table[name];
+int Scope::resolveSymbol(const std::string_view& name) {
+  auto it = m_symbol_table.find(name);
+  if (it != m_symbol_table.end()) {
+    return m_symbol_table[name];
   }
 
   if (m_outer_scope != nullptr) {
@@ -26,7 +25,7 @@ Symbol* Scope::resolveSymbol(std::string name) {
   }
 
   // variable doesn't exist in this function
-  return nullptr;
+  return -1;
 }
 
 }  // namespace linaro

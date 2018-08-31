@@ -5,6 +5,8 @@
 #include <memory>
 #include <string_view>
 
+#include "../parsing/token.h"
+
 namespace linaro {
 
 #define AST_NODES(T)      \
@@ -24,7 +26,6 @@ namespace linaro {
                           \
   /* Statement nodes:*/   \
   T(ExpressionStatement)  \
-  T(EmptyStatement)       \
   T(Block)                \
   T(ReturnStatement)      \
   T(PrintStatement)       \
@@ -76,6 +77,7 @@ class Node {
 
   NodeType type() const { return m_type; }
   virtual void visit(NodeVisitor& v) = 0;
+  //  virtual const Location& location() const = 0;
   virtual void printNode() const = 0;
   virtual ~Node() {}
 

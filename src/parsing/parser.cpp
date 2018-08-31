@@ -19,7 +19,7 @@ Parser::Parser(const char* filename) : m_lex{Lexer(filename)} {
   nextToken();
 }
 
-NodePtr Parser::parse() {
+FunctionLiteralPtr Parser::parse() {
   Identifier argc(Token(TokenType::SYMBOL, std::string_view("argc")));
   Identifier argv(Token(TokenType::SYMBOL, std::string_view("argv")));
   std::vector<Identifier> main_args = {argc, argv};

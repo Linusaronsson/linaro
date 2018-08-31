@@ -76,13 +76,6 @@ class ExpressionStatement : public Statement {
   ExpressionPtr m_expr;
 };
 
-class EmptyStatement : public Statement {
- public:
-  EmptyStatement() : Statement(nEmptyStatement) {}
-  void visit(NodeVisitor& v) override { v.visitEmptyStatement(*this); }
-  void printNode() const override { std::cout << "EmptyStatement\n"; }
-};
-
 class ReturnStatement : public Statement {
  public:
   ReturnStatement(ExpressionPtr expr)

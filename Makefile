@@ -150,6 +150,87 @@ src/ast/ast.cpp.s:
 	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/ast/ast.cpp.s
 .PHONY : src/ast/ast.cpp.s
 
+src/code_generator/chunk.o: src/code_generator/chunk.cpp.o
+
+.PHONY : src/code_generator/chunk.o
+
+# target to build an object file
+src/code_generator/chunk.cpp.o:
+	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/code_generator/chunk.cpp.o
+.PHONY : src/code_generator/chunk.cpp.o
+
+src/code_generator/chunk.i: src/code_generator/chunk.cpp.i
+
+.PHONY : src/code_generator/chunk.i
+
+# target to preprocess a source file
+src/code_generator/chunk.cpp.i:
+	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/code_generator/chunk.cpp.i
+.PHONY : src/code_generator/chunk.cpp.i
+
+src/code_generator/chunk.s: src/code_generator/chunk.cpp.s
+
+.PHONY : src/code_generator/chunk.s
+
+# target to generate assembly for a file
+src/code_generator/chunk.cpp.s:
+	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/code_generator/chunk.cpp.s
+.PHONY : src/code_generator/chunk.cpp.s
+
+src/code_generator/code_generator.o: src/code_generator/code_generator.cpp.o
+
+.PHONY : src/code_generator/code_generator.o
+
+# target to build an object file
+src/code_generator/code_generator.cpp.o:
+	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/code_generator/code_generator.cpp.o
+.PHONY : src/code_generator/code_generator.cpp.o
+
+src/code_generator/code_generator.i: src/code_generator/code_generator.cpp.i
+
+.PHONY : src/code_generator/code_generator.i
+
+# target to preprocess a source file
+src/code_generator/code_generator.cpp.i:
+	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/code_generator/code_generator.cpp.i
+.PHONY : src/code_generator/code_generator.cpp.i
+
+src/code_generator/code_generator.s: src/code_generator/code_generator.cpp.s
+
+.PHONY : src/code_generator/code_generator.s
+
+# target to generate assembly for a file
+src/code_generator/code_generator.cpp.s:
+	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/code_generator/code_generator.cpp.s
+.PHONY : src/code_generator/code_generator.cpp.s
+
+src/code_generator/scope.o: src/code_generator/scope.cpp.o
+
+.PHONY : src/code_generator/scope.o
+
+# target to build an object file
+src/code_generator/scope.cpp.o:
+	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/code_generator/scope.cpp.o
+.PHONY : src/code_generator/scope.cpp.o
+
+src/code_generator/scope.i: src/code_generator/scope.cpp.i
+
+.PHONY : src/code_generator/scope.i
+
+# target to preprocess a source file
+src/code_generator/scope.cpp.i:
+	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/code_generator/scope.cpp.i
+.PHONY : src/code_generator/scope.cpp.i
+
+src/code_generator/scope.s: src/code_generator/scope.cpp.s
+
+.PHONY : src/code_generator/scope.s
+
+# target to generate assembly for a file
+src/code_generator/scope.cpp.s:
+	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/code_generator/scope.cpp.s
+.PHONY : src/code_generator/scope.cpp.s
+
 src/linaro_utils/utils.o: src/linaro_utils/utils.cpp.o
 
 .PHONY : src/linaro_utils/utils.o
@@ -405,6 +486,15 @@ help:
 	@echo "... src/ast/ast.o"
 	@echo "... src/ast/ast.i"
 	@echo "... src/ast/ast.s"
+	@echo "... src/code_generator/chunk.o"
+	@echo "... src/code_generator/chunk.i"
+	@echo "... src/code_generator/chunk.s"
+	@echo "... src/code_generator/code_generator.o"
+	@echo "... src/code_generator/code_generator.i"
+	@echo "... src/code_generator/code_generator.s"
+	@echo "... src/code_generator/scope.o"
+	@echo "... src/code_generator/scope.i"
+	@echo "... src/code_generator/scope.s"
 	@echo "... src/linaro_utils/utils.o"
 	@echo "... src/linaro_utils/utils.i"
 	@echo "... src/linaro_utils/utils.s"
