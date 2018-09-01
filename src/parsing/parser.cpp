@@ -10,7 +10,7 @@
 #include "lexer.h"
 #include "token.h"
 
-namespace linaro {
+namespace Linaro {
 
 Parser::Parser(const char* filename) : m_lex{Lexer(filename)} {
   // Fill buffer with the initial 6 tokens
@@ -417,4 +417,4 @@ StatementPtr Parser::parseFunctionDeclaration() {
   expect(TokenType::SYMBOL, "Expected function name.");
   return std::make_unique<FunctionDeclaration>(current_token);
 }
-}  // namespace linaro
+}  // namespace Linaro

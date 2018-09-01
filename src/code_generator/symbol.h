@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace linaro {
+namespace Linaro {
 class Symbol {
  public:
   Symbol(std::string name, int index) : m_name{name}, m_index{index} {}
@@ -17,6 +17,6 @@ class Symbol {
   int m_index;
 };
 
-}  // Namespace linaro
+}  // namespace Linaro
 
 #endif  // SYMBOL_TABLE_H

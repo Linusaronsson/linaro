@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace linaro {
+namespace Linaro {
 
 struct Location;
 
@@ -81,6 +81,6 @@ class BytecodeChunk {
   std::vector<Location*> m_loc;
 };
 
-}  // Namespace linaro
+}  // namespace Linaro
 
 #endif  // CHUNK_H

@@ -5,7 +5,7 @@
 
 #include "../linaro_utils/common.h"
 
-namespace linaro {
+namespace Linaro {
 
 Lexer::Lexer(const char* filename) : m_source_code{readFile(filename)} {
   initLexer(filename);
@@ -283,4 +283,4 @@ Token Lexer::linaroString() {
                std::string_view{cursor + 1, offsetFromCursor() - 2});
 }
 
-}  // namespace linaro
+}  // namespace Linaro

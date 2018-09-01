@@ -4,7 +4,7 @@
 #include "../code_generator/chunk.h"
 #include "value.h"
 
-namespace linaro {
+namespace Linaro {
 
 /*
  * An instance that can be run by the VM.
@@ -14,10 +14,8 @@ namespace linaro {
  */
 class VMContext {
  public:
-  VMContext(int num_globals,
-            const BytecodeChunk& main_code)
-      : m_num_globals(num_globals),
-        m_main_code(main_code) {}
+  VMContext(int num_globals, const BytecodeChunk& main_code)
+      : m_num_globals(num_globals), m_main_code(main_code) {}
 
   ~VMContext() {}
 
@@ -38,6 +36,6 @@ class VMContext {
  * information to start a VM and execute the program.
  * */
 
-}  // Namespace linaro
+}  // namespace Linaro
 
 #endif  // VM_INSTANCE_H

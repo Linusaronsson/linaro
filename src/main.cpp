@@ -15,7 +15,7 @@
 #include "vm/value.h"
 
 #define DEBUG_CODE_GENERATOR
-using namespace linaro;
+using namespace Linaro;
 
 int main() {
   //  uint64_t t1 = 0;
@@ -43,7 +43,13 @@ int main() {
   Parser parser("script.lo");
   auto AST = parser.parse();
   auto fn = CodeGenerator::compile(AST.get());
-  fn->printFunction();
+#ifdef DEBUG
+  auto functions = CodeGenerator::getFunctions();
+  std::cout << "\n---- PROGRAM DEBUG ----\n\n";
+  for (const auto& fn : functions) {
+    fn->printFunction();
+  }
+#endif
 #endif
 
 #ifdef DEBUG_VM

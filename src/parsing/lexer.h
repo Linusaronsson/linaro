@@ -8,7 +8,7 @@
 #include "../linaro_utils/utils.h"
 #include "token.h"
 
-namespace linaro {
+namespace Linaro {
 
 class Lexer {
  public:
@@ -49,6 +49,6 @@ class Lexer {
   Location current_location;
 };  // namespace linaro
 
-}  // namespace linaro
+}  // namespace Linaro
 
 #endif  // LEXER_H

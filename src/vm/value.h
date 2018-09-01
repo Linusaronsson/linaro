@@ -8,7 +8,7 @@
 
 #include "../linaro_utils/common.h"
 
-namespace linaro {
+namespace Linaro {
 
 #define VALUES(V) V(Number) V(Boolean) V(Object) V(Undefined) V(Noll)
 #define OBJECTS(O) O(String) O(Function) O(Array) O(Closure) O(Thread)
@@ -151,6 +151,6 @@ class Value {
   std::variant<bool, double, std::shared_ptr<Object>> as;
 };
 
-}  // Namespace linaro
+}  // namespace Linaro
 
 #endif  // VALUE_H

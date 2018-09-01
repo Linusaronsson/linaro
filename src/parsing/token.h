@@ -8,7 +8,7 @@
 #include "../linaro_utils/common.h"
 #include "../vm/value.h"
 
-namespace linaro {
+namespace Linaro {
 
 #define TOKENS(T, K, C)                         \
   /* End of file. */                            \
@@ -190,6 +190,6 @@ class Token {
   // True if token had atleast 1 '\n' before it.
   bool had_newline_before;
 };
-}  // Namespace linaro
+}  // namespace Linaro
 
 #endif  // TOKEN_H

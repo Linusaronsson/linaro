@@ -11,7 +11,7 @@
 #include "../parsing/token.h"
 #include "common.h"
 
-namespace linaro {
+namespace Linaro {
 
 // Utility functions
 std::string readFile(const char *filename);
@@ -34,7 +34,7 @@ class Error {
  public:
   static void reportErrorAt(const Location &loc, ErrorType type,
                             const char *format, va_list args) {
-    std::cerr << errorToString[(int)type] << loc << " ";
+    std::cerr << errorToString[(int)type] << " " << loc << " ";
     vfprintf(stderr, format, args);
     std::cerr << '\n';
   }
@@ -59,6 +59,6 @@ class Stack {
  private:
   std::vector<T> m_stack;
 };
-}  // Namespace linaro
+}  // namespace Linaro
 
 #endif  // UTILS_H

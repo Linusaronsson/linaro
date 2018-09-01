@@ -1,6 +1,6 @@
 #include "utils.h"
 
-namespace linaro {
+namespace Linaro {
 
 std::string readFile(const char *filename) {
   std::ifstream f(filename);
@@ -9,4 +9,4 @@ std::string readFile(const char *filename) {
   return ss.str();
 }
 
-}  // namespace linaro
+}  // namespace Linaro

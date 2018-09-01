@@ -4,7 +4,7 @@
 #include "../ast/statement.h"
 #include "value.h"
 
-namespace linaro {
+namespace Linaro {
 /* String */
 
 bool String::canBeNumber() const {
@@ -52,16 +52,8 @@ void Function::printCapturedVariables() const {
 }
 
 void Function::printFunction() {
-  if (m_fn_ast->isTopLevel()) {
-    std::cout << "\n---- PROGRAM DEBUG ----\n\n";
-  }
-
   std::cout << "fn " << m_name << "(";
-  const auto& args = m_fn_ast->args();
-  for (auto it = args.begin(); it != args.end(); it++) {
-    std::cout << it->name();
-    if (std::next(it) != args.end()) std::cout << ", ";
-  }
+  printArguments(m_fn_ast->args());
   std::cout << "):\n";
   std::cout << "Num arguments: " << m_num_args
             << "\nNum locals: " << m_num_locals
@@ -74,20 +66,29 @@ void Function::printFunction() {
   std::cout << '\n';
 }
 
-void Function::printConstants() {
-  std::cout << "Constant pool (" << m_name << "):\n";
+void Function::printArguments(const std::vector<Identifier>& args) {
+  for (auto it = args.begin(); it != args.end(); it++) {
+    std::cout << it->name();
+    if (std::next(it) != args.end()) std::cout << ", ";
+  }
+}
 
+void Function::printConstants() {
+  std::cout << "Constant pool:\n";
   for (size_t i = 0; i < m_constants.size(); i++) {
     Value val = m_constants[i];
+    std::cout << i << ": ";
     if (val.isFunction()) {
-      std::cout << '\n' << i << ": ";
-      val.valueTo<Function>().printFunction();
+      Function& fn = val.valueTo<Function>();
+      std::cout << "fn " << val << "(";
+      printArguments(fn.getFunctionAST()->args());
+      std::cout << ")\n";
     } else {
-      std::cout << i << ": ";
       std::cout << val << '\n';
     }
   }
 }
+
 #endif
 
 /* Array */
@@ -124,4 +125,4 @@ std::string Array::asString() const {
 
 /* Thread (TODO) */
 
-}  // Namespace linaro
+}  // namespace Linaro

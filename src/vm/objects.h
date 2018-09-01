@@ -8,7 +8,7 @@
 #include "../code_generator/chunk.h"
 #include "value.h"
 
-namespace linaro {
+namespace Linaro {
 
 class String : public Object {
  public:
@@ -34,6 +34,11 @@ struct CompilerCapturedVariable {
 };
 
 class FunctionLiteral;  // Function AST node
+
+#ifdef DEBUG
+class Identifier;
+#endif
+
 class Function : public Object {
  public:
   Function(FunctionLiteral* fn_ast, std::string_view name, int num_args)
@@ -74,6 +79,7 @@ class Function : public Object {
 #ifdef DEBUG
   void printCapturedVariables() const;
   void printFunction();
+  void printArguments(const std::vector<Identifier>& args);
   void disassembleChunk() const { m_code.disassembleChunk(); }
   void printConstants();
 #endif
@@ -160,6 +166,6 @@ class Array : public Object {
   char delimiter = ' ';
 };
 
-}  // Namespace linaro
+}  // namespace Linaro
 
 #endif  // OBJECT_H

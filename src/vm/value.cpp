@@ -6,7 +6,7 @@
 
 #include "objects.h"
 
-namespace linaro {
+namespace Linaro {
 
 /* Value */
 
@@ -226,4 +226,4 @@ Value::cmp_result Value::compare(const Value& lhs, const Value& rhs) {
   }
 }
 
-}  // namespace linaro
+}  // namespace Linaro

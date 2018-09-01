@@ -4,7 +4,7 @@
 #include <memory>
 #include <unordered_map>
 
-namespace linaro {
+namespace Linaro {
 
 class Scope {
  public:
@@ -30,6 +30,6 @@ class Scope {
   std::unordered_map<std::string_view, int> m_symbol_table;
 };
 
-}  // Namespace linaro
+}  // namespace Linaro
 
 #endif  // SCOPE_H

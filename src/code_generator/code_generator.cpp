@@ -1,12 +1,21 @@
 #include "code_generator.h"
 
-namespace linaro {
+namespace Linaro {
+
+#ifdef DEBUG
+std::vector<Function*> CodeGenerator::m_functions;
+#endif
 
 std::unique_ptr<Function> CodeGenerator::compile(FunctionLiteral* AST) {
   CHECK(AST != nullptr);
   auto top_level = std::make_unique<Function>(AST, AST->name(), AST->numArgs());
   CodeGenerator cg;
   cg.m_fn = top_level.get();
+
+#ifdef DEBUG
+  m_functions.push_back(top_level.get());
+#endif
+
   cg.compileFunction(&cg, AST);
   top_level->setIsCompiled(true);
   cg.generateBytecode(Bytecode::halt);
@@ -30,7 +39,7 @@ void CodeGenerator::semanticError(const Location& loc, const char* format,
                                   ...) const {
   va_list args;
   va_start(args, format);
-  Error::reportErrorAt(loc, Error::RuntimeError, format, args);
+  Error::reportErrorAt(loc, Error::SemanticError, format, args);
   va_end(args);
 }
 
@@ -173,6 +182,11 @@ void CodeGenerator::visitFunctionLiteral(const FunctionLiteral& node) {
   // TODO: For lazy compilation it shouldn't compile here.
   CodeGenerator c(this);
   c.m_fn = fn.get();
+
+#ifdef DEBUG
+  m_functions.push_back(fn.get());
+#endif
+
   compileFunction(&c, fn_literal);
   fn->setIsCompiled(true);
 
@@ -186,7 +200,7 @@ void CodeGenerator::visitFunctionLiteral(const FunctionLiteral& node) {
     int i = m_current_scope->resolveSymbol(node.name());
     CHECK(i != -1);
     generateBytecode(
-        fn_literal->isTopLevel() ? Bytecode::store : Bytecode::gstore, i);
+        fn_literal->isTopLevel() ? Bytecode::gstore : Bytecode::store, i);
   }
   // Return null implicitly
   c.generateBytecode(Bytecode::null);
@@ -415,11 +429,12 @@ void CodeGenerator::visitAssignmentTarget(Expression* target,
     semanticError(loc, "Left hand side of assignment invalid");
     return;
   }
-}  // namespace linaro
+}
 
 void CodeGenerator::visitCall(const Call& node) {
   // Visit arguments and put them on stack before call.
   const auto& args = node.arguments();
+  // Consider visiting them in the reverse order?
   int arity = args.size();
   for (int i = args.size() - 1; i >= 0; i--) {
     args[i]->visit(*this);
@@ -500,4 +515,4 @@ void CodeGenerator::visitWhileStatement(const WhileStatement& node) {
   generateBytecode(Bytecode::pop);
 }
 
-}  // Namespace linaro
+}  // namespace Linaro

@@ -1,6 +1,6 @@
 #include "token.h"
 
-namespace linaro {
+namespace Linaro {
 
 std::string_view Token::asString() const {
   switch (m_type) {
@@ -19,4 +19,4 @@ std::ostream& operator<<(std::ostream& cout, const Token& tok) {
        << tok.asString() << ")";
   return cout;
 }
-}  // namespace linaro
+}  // namespace Linaro

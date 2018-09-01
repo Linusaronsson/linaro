@@ -5,7 +5,7 @@
 
 #include "../linaro_utils/common.h"
 
-namespace linaro {
+namespace Linaro {
 
 void Label::bindLabel(size_t o) {
   CHECK(!bound && m_offset != invalidOffset);
@@ -82,4 +82,4 @@ int BytecodeChunk::getNumArguments(Bytecode op) const {
   }
 }
 
-}  // namespace linaro
+}  // namespace Linaro

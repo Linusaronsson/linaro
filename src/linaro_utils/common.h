@@ -1,7 +1,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-namespace linaro {
+namespace Linaro {
 
 // Constants
 const int MAX_PARAMETERS = 8;
@@ -43,6 +43,6 @@ const int MAX_SYMBOL_PER_SCOPE = 64;
 #define UNREACHABLE()
 #endif
 
-}  // namespace linaro
+}  // namespace Linaro
 
 #endif  // COMMON_H

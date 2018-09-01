@@ -7,7 +7,7 @@
 
 #include "../parsing/token.h"
 
-namespace linaro {
+namespace Linaro {
 
 #define AST_NODES(T)      \
   /* Expression nodes: */ \

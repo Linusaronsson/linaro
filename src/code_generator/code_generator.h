@@ -11,7 +11,7 @@
 #include "chunk.h"
 #include "scope.h"
 
-namespace linaro {
+namespace Linaro {
 
 // Keeps track of where a symbol was resolved from in relation to the current
 // function.
@@ -51,6 +51,10 @@ class CodeGenerator : public NodeVisitor {
   // some constant pool. The caller is therefor responsible for
   // the created function.
   static std::unique_ptr<Function> compile(FunctionLiteral* AST);
+
+#ifdef DEBUG
+  static const auto& getFunctions() { return m_functions; }
+#endif
 
  private:
   CodeGenerator(CodeGenerator* enclosing_compiler = nullptr)
@@ -135,8 +139,13 @@ class CodeGenerator : public NodeVisitor {
 
   // Hash set of variables
   std::unordered_set<Variable, Variable::VariableHasher> m_variables;
+
+#ifdef DEBUG
+  // All functions in the script (only needed for debug information)
+  static std::vector<Function*> m_functions;
+#endif
 };
 
-}  // Namespace linaro
+}  // namespace Linaro
 
 #endif  // COMPILER_H

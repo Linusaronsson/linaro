@@ -1,6 +1,6 @@
 #include "scope.h"
 #include <iostream>
-namespace linaro {
+namespace Linaro {
 
 int Scope::defineSymbol(const std::string_view& name) {
   auto it = m_symbol_table.find(name);
@@ -28,4 +28,4 @@ int Scope::resolveSymbol(const std::string_view& name) {
   return -1;
 }
 
-}  // namespace linaro
+}  // namespace Linaro

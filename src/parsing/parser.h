@@ -8,7 +8,7 @@
 #include "lexer.h"
 #include "token.h"
 
-namespace linaro {
+namespace Linaro {
 
 class Parser {
  public:
@@ -82,6 +82,6 @@ class Parser {
   bool hadError = false;
 };
 
-}  // namespace linaro
+}  // namespace Linaro
 
 #endif  // PARSER_H

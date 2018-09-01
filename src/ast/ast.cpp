@@ -2,7 +2,7 @@
 #include "expression.h"
 #include "statement.h"
 
-namespace linaro {
+namespace Linaro {
 
 #define T(type) \
   type* Node::as##type() { return static_cast<type*>(this); }

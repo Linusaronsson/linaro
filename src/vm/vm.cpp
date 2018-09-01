@@ -2,7 +2,7 @@
 
 #include "../code_generator/code_generator.h"
 
-namespace linaro {
+namespace Linaro {
 
 VMEndingStatus VM::interpret(const std::string& source, const char* filename) {
   // initialize VM (todo)
@@ -133,4 +133,4 @@ VMEndingStatus VM::execute(BytecodeChunk* code) {
   }
 }
 
-}  // Namespace linaro
+}  // namespace Linaro

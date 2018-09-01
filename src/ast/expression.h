@@ -6,7 +6,7 @@
 #include "../vm/objects.h"
 #include "ast.h"
 
-namespace linaro {
+namespace Linaro {
 class Expression : public Node {
  public:
   virtual bool isValidReferenceExpression() { return false; }

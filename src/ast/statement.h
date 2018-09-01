@@ -7,7 +7,7 @@
 #include "ast.h"
 #include "expression.h"
 
-namespace linaro {
+namespace Linaro {
 class Statement : public Node {
  protected:
   Statement(NodeType type) : Node(type) {}

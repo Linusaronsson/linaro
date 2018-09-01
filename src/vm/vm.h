@@ -16,7 +16,7 @@
 class ConstantPool;
 class BytecodeChunk;
 
-namespace linaro {
+namespace Linaro {
 
 struct StackFrame {
   StackFrame(Closure *closure) : m_closure{closure} {
@@ -122,6 +122,6 @@ class VM {
   std::vector<CapturedVariable> open_captured_variables;
 };
 
-}  // namespace linaro
+}  // namespace Linaro
 
 #endif  // VM_H
