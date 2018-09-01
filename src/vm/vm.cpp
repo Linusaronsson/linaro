@@ -1,24 +1,8 @@
 #include "vm.h"
 
 #include "../code_generator/code_generator.h"
-#include "../linaro_utils/utils.h"
-#include "value.h"
 
 namespace linaro {
-
-void VM::runtimeError(const char* format, ...) {
-  va_list args;
-  va_start(args, format);
-  const Location& loc = current_chunk->getLocation(ip);
-  Error::reportErrorAt(loc, Error::RuntimeError, format, args);
-  va_end(args);
-
-  // Do stuff to reset VM
-  m_operand_stack.reset();
-  m_call_stack.reset();
-}
-
-void VM::initVM() {}
 
 VMEndingStatus VM::interpret(const std::string& source, const char* filename) {
   // initialize VM (todo)
@@ -31,6 +15,20 @@ VMEndingStatus VM::interpret(const std::string& source, const char* filename) {
 
   // return status code
   return res;
+}
+
+void VM::initVM() {}
+
+void VM::runtimeError(const char* format, ...) {
+  va_list args;
+  va_start(args, format);
+  const Location& loc = current_chunk->getLocation(ip);
+  Error::reportErrorAt(loc, Error::RuntimeError, format, args);
+  va_end(args);
+
+  // Do stuff to reset VM
+  m_operand_stack.reset();
+  m_call_stack.reset();
 }
 
 uint8_t VM::readByte() { return current_chunk->readByte(ip++); }

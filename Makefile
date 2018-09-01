@@ -366,32 +366,32 @@ src/parsing/token.cpp.s:
 	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/parsing/token.cpp.s
 .PHONY : src/parsing/token.cpp.s
 
-src/vm/object.o: src/vm/object.cpp.o
+src/vm/objects.o: src/vm/objects.cpp.o
 
-.PHONY : src/vm/object.o
+.PHONY : src/vm/objects.o
 
 # target to build an object file
-src/vm/object.cpp.o:
-	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/vm/object.cpp.o
-.PHONY : src/vm/object.cpp.o
+src/vm/objects.cpp.o:
+	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/vm/objects.cpp.o
+.PHONY : src/vm/objects.cpp.o
 
-src/vm/object.i: src/vm/object.cpp.i
+src/vm/objects.i: src/vm/objects.cpp.i
 
-.PHONY : src/vm/object.i
+.PHONY : src/vm/objects.i
 
 # target to preprocess a source file
-src/vm/object.cpp.i:
-	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/vm/object.cpp.i
-.PHONY : src/vm/object.cpp.i
+src/vm/objects.cpp.i:
+	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/vm/objects.cpp.i
+.PHONY : src/vm/objects.cpp.i
 
-src/vm/object.s: src/vm/object.cpp.s
+src/vm/objects.s: src/vm/objects.cpp.s
 
-.PHONY : src/vm/object.s
+.PHONY : src/vm/objects.s
 
 # target to generate assembly for a file
-src/vm/object.cpp.s:
-	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/vm/object.cpp.s
-.PHONY : src/vm/object.cpp.s
+src/vm/objects.cpp.s:
+	$(MAKE) -f CMakeFiles/linaro.dir/build.make CMakeFiles/linaro.dir/src/vm/objects.cpp.s
+.PHONY : src/vm/objects.cpp.s
 
 src/vm/value.o: src/vm/value.cpp.o
 
@@ -510,9 +510,9 @@ help:
 	@echo "... src/parsing/token.o"
 	@echo "... src/parsing/token.i"
 	@echo "... src/parsing/token.s"
-	@echo "... src/vm/object.o"
-	@echo "... src/vm/object.i"
-	@echo "... src/vm/object.s"
+	@echo "... src/vm/objects.o"
+	@echo "... src/vm/objects.i"
+	@echo "... src/vm/objects.s"
 	@echo "... src/vm/value.o"
 	@echo "... src/vm/value.i"
 	@echo "... src/vm/value.s"

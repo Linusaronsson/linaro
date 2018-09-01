@@ -5,18 +5,25 @@ namespace linaro {
 std::unique_ptr<Function> CodeGenerator::compile(FunctionLiteral* AST) {
   CHECK(AST != nullptr);
   auto top_level = std::make_unique<Function>(AST, AST->name(), AST->numArgs());
-  top_level->getFunctionAST()->visit(*this);
-  top_level->setIsCompiled(true);  // Probably unecessary
-  generateBytecode(Bytecode::halt);
+  CodeGenerator cg;
+  cg.m_fn = top_level.get();
+  cg.compileFunction(&cg, AST);
+  top_level->setIsCompiled(true);
+  cg.generateBytecode(Bytecode::halt);
   return top_level;
 }
 
-void CodeGenerator::compileFunction(Function* fn) {
-  CHECK(fn != nullptr);
-  // Create a code generator for the function to be compiled
-  CodeGenerator c{fn, m_enclosing_compiler};
-  fn->getFunctionAST()->visit(c);
-  fn->setIsCompiled(true);  // Probably unecessary
+void CodeGenerator::compileFunction(CodeGenerator* cg, FunctionLiteral* fn) {
+  CHECK(cg != nullptr && fn != nullptr);
+  // Create function scope (no param)
+  cg->m_current_scope = std::make_unique<Scope>();
+
+  // Define parameters in function scope
+  for (const auto& arg : fn->args()) {
+    cg->defineSymbol(arg.name(), arg.loc());
+  }
+
+  fn->block()->visit(*cg);
 }
 
 void CodeGenerator::semanticError(const Location& loc, const char* format,
@@ -47,6 +54,27 @@ void CodeGenerator::generateBytecode(Bytecode op_code, uint16_t operand1,
 
 void CodeGenerator::generateConstant(const Value& val) {
   generateBytecode(Bytecode::constant, m_fn->addConstant(val));
+}
+
+void CodeGenerator::pushScope() {
+  CHECK(m_current_scope != nullptr);
+  // If outer scope is nullptr it's the top scope in the function which has
+  // already been initialized.
+  if (m_current_scope->outerScope() != nullptr)
+    m_current_scope = std::make_unique<Scope>(m_current_scope);
+}
+
+void CodeGenerator::popScope() {
+  CHECK(m_current_scope != nullptr);
+  std::unique_ptr<Scope>& outer = m_current_scope->outerScope();
+  if (outer != nullptr) {
+    // Local scope being popped
+    outer->addToIndex(m_current_scope->numLocals());
+    m_current_scope = std::move(outer);
+  } else {
+    // Function scope being popped
+    m_fn->setNumLocals(m_current_scope->index());
+  }
 }
 
 int CodeGenerator::addConstantIfNew(const Value& val) {
@@ -104,7 +132,8 @@ const Variable* CodeGenerator::resolveSymbol(const std::string_view& name,
   }
 
   // Check enclosing function
-  const Variable* var = m_enclosing_compiler->resolveSymbol(name, loc, false);
+  const Variable* var =
+      m_enclosing_compiler->resolveSymbol(name, loc, is_assign);
   // If var is nullptr we can just return it because the enclosing compiler has
   // already reported that the symbol wasn't defined.
   if (var == nullptr || var->is_top_level())
@@ -115,16 +144,6 @@ const Variable* CodeGenerator::resolveSymbol(const std::string_view& name,
     arg = m_fn->addCapturedVariable(var->index(), false);
   }
   return addVariable(arg, VariableOrigin::captured);
-}
-
-void CodeGenerator::pushScope() {
-  m_current_scope = std::make_unique<Scope>(m_current_scope);
-}
-
-void CodeGenerator::popScope() {
-  std::unique_ptr<Scope>& outer = m_current_scope->outerScope();
-  outer->addToIndex(m_current_scope->numLocals());
-  m_current_scope = std::move(outer);
 }
 
 /* --- Visit Expressions --- */
@@ -148,17 +167,44 @@ void CodeGenerator::visitLiteral(const Literal& val) {
 }
 
 void CodeGenerator::visitFunctionLiteral(const FunctionLiteral& node) {
-  // Function fn{const_cast<FunctionLiteral*>(&node), node.name(),
-  // node.numArgs()}; int index = m_fn->addConstant(Value(fn));
-  // Variable* var = resolveSymbol()
+  auto fn_literal = const_cast<FunctionLiteral*>(&node);
+  auto fn = std::make_shared<Function>(fn_literal, node.name(), node.numArgs());
+
+  // TODO: For lazy compilation it shouldn't compile here.
+  CodeGenerator c(this);
+  c.m_fn = fn.get();
+  compileFunction(&c, fn_literal);
+  fn->setIsCompiled(true);
 
   // Create closure
-  // generateBytecode(Bytecode::closure, index);
+  generateBytecode(Bytecode::closure, m_fn->addConstant(Value(fn)));
+
+  // If it was a named function, it will have been forward declared in the
+  // current scope, look it up and get the index. The closure is then stored at
+  // this index in the local space at runtime.
+  if (node.isNamed()) {
+    int i = m_current_scope->resolveSymbol(node.name());
+    CHECK(i != -1);
+    generateBytecode(
+        fn_literal->isTopLevel() ? Bytecode::store : Bytecode::gstore, i);
+  }
+  // Return null implicitly
+  c.generateBytecode(Bytecode::null);
+  c.generateBytecode(Bytecode::ret);
 }
 
-void CodeGenerator::visitArrayLiteral(const ArrayLiteral& node) {}
+void CodeGenerator::visitArrayLiteral(const ArrayLiteral& node) {
+  for (const auto& e : node.elements()) {
+    e->visit(*this);
+  }
+  generateBytecode(Bytecode::new_array, node.elements().size());
+}
 
-void CodeGenerator::visitArrayAccess(const ArrayAccess& node) {}
+void CodeGenerator::visitArrayAccess(const ArrayAccess& node) {
+  node.target()->visit(*this);
+  node.index()->visit(*this);
+  generateBytecode(Bytecode::aload);
+}
 
 void CodeGenerator::visitIdentifier(const Identifier& node) {
   const Variable* var = resolveSymbol(node.name(), node.loc(), false);
@@ -175,7 +221,7 @@ void CodeGenerator::visitIdentifier(const Identifier& node) {
       op = Bytecode::load;
       break;
   }
-  generateBytecode(op);
+  generateBytecode(op, var->index());
 }
 
 void CodeGenerator::visitBinaryOperation(const BinaryOperation& node) {
@@ -342,23 +388,29 @@ void CodeGenerator::visitAssignmentTarget(Expression* target,
       // Variable was not defined, so define it at use:
       index = m_current_scope->defineSymbol(id->name());
       CHECK(index != -1);
-      op = (m_enclosing_compiler == nullptr ? Bytecode::gload : Bytecode::load);
+      op = (m_enclosing_compiler == nullptr ? Bytecode::gstore
+                                            : Bytecode::store);
     } else {
       // Variable was defined, reuse it:
       index = var->index();
       switch (var->origin()) {
         case VariableOrigin::top_level:
-          op = Bytecode::gload;
+          op = Bytecode::gstore;
           break;
         case VariableOrigin::captured:
-          op = Bytecode::cload;
+          op = Bytecode::cstore;
           break;
         case VariableOrigin::local:
-          op = Bytecode::load;
+          op = Bytecode::store;
           break;
       }
     }
     generateBytecode(op, index);
+  } else if (target->isArrayAccess()) {
+    ArrayAccess* ac = target->asArrayAccess();
+    ac->target()->visit(*this);
+    ac->index()->visit(*this);
+    generateBytecode(Bytecode::astore);
   } else {
     semanticError(loc, "Left hand side of assignment invalid");
     return;
@@ -379,6 +431,7 @@ void CodeGenerator::visitCall(const Call& node) {
 /* ---  statements --- */
 void CodeGenerator::visitBlock(const Block& blk) {
   // Visit declarations first for forward references (only functions atm).
+  pushScope();
   for (const auto& s : blk.getDeclarations()) {
     s->visit(*this);
   }
@@ -386,6 +439,7 @@ void CodeGenerator::visitBlock(const Block& blk) {
   for (const auto& s : blk.getStatements()) {
     s->visit(*this);
   }
+  popScope();
 }
 
 void CodeGenerator::visitExpressionStatement(const ExpressionStatement& stmt) {
@@ -406,18 +460,12 @@ void CodeGenerator::visitPrintStatement(const PrintStatement& node) {
   generateBytecode(Bytecode::print);
 }
 
-void CodeGenerator::visitLocalScope(Block* blk) {
-  pushScope();
-  blk->visit(*this);
-  popScope();
-}
-
 void CodeGenerator::visitIfStatement(const IfStatement& node) {
   if (node.expr()->toBooleanIsTrue()) {
-    visitLocalScope(node.ifBlock());
+    node.ifBlock()->visit(*this);
   } else if (node.expr()->toBooleanIsFalse()) {
     if (node.hasElseBlock()) {
-      visitLocalScope(node.elseBlock());
+      node.elseBlock()->visit(*this);
     }
   } else {
     // Visit condition.
@@ -425,14 +473,14 @@ void CodeGenerator::visitIfStatement(const IfStatement& node) {
     Label else_label(code()->currentOffset());
     // jump to jump at this point for and/or expr. Is fixed in the VM.
     generateBytecode(Bytecode::jmp_false, 0);
-    visitLocalScope(node.ifBlock());
+    node.ifBlock()->visit(*this);
     if (node.hasElseBlock()) {
       Label end_label(code()->currentOffset());
       generateBytecode(Bytecode::jmp, 0);
       code()->patchJump(else_label);
       // remove the evaluated expr since it's not used for its value.
       generateBytecode(Bytecode::pop);
-      visitLocalScope(node.elseBlock());
+      node.elseBlock()->visit(*this);
       code()->patchJump(end_label);
     } else {
       code()->patchJump(else_label);
@@ -446,7 +494,7 @@ void CodeGenerator::visitWhileStatement(const WhileStatement& node) {
   node.expr()->visit(*this);
   Label end(code()->currentOffset());
   generateBytecode(Bytecode::jmp_false, 0);
-  visitLocalScope(node.whileBlock());
+  node.whileBlock()->visit(*this);
   generateBytecode(Bytecode::jmp, start_of_block);
   code()->patchJump(end);
   generateBytecode(Bytecode::pop);

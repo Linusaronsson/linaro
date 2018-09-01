@@ -3,42 +3,12 @@
 
 #include <iostream>
 #include <memory>
+#include <unordered_map>
 
 #include "../code_generator/chunk.h"
+#include "value.h"
 
 namespace linaro {
-
-class Value;
-
-#define OBJECTS(O) O(String) O(Function) O(Array) O(Closure) O(Thread)
-
-class Object {
- public:
-#define O(type) n##type,
-  enum ObjectType : uint8_t { OBJECTS(O) };
-#undef O
-
-  Object(ObjectType type) : m_type{type} {}
-  virtual ~Object() {}
-
-  // Helper methods
-#define O(type) \
-  inline bool is##type() const { return m_type == ObjectType::n##type; }
-  OBJECTS(O)
-#undef O
-
-  /* Linaro Object interface */
-
-  // Conversions/checking
-  virtual bool canBeNumber() const { return false; };
-  virtual double asNumber() const { return 0; };
-  virtual bool asBoolean() const { return false; };
-  virtual std::string asString() const { return "Undefined"; };
-  virtual size_t hash() const = 0;
-
- private:
-  ObjectType m_type;
-};
 
 class String : public Object {
  public:
@@ -76,12 +46,13 @@ class Function : public Object {
     return std::hash<std::string_view>{}(m_source);
   }
 
-  void setLocals(int num) { m_num_locals = num; }
+  void setNumLocals(int num) { m_num_locals = num; }
   void setCode(const BytecodeChunk& c) { m_code = c; }
   void setIsCompiled(bool is_compiled) { m_is_compiled = is_compiled; }
+  std::string_view name() const { return m_name; }
   int numLocals() const { return m_num_locals; }
   int numArgs() const { return m_num_args; }
-  int numCapturedVariables() const { return num_captured_variables; }
+  int numCapturedVariables() const { return m_num_captured_variables; }
   bool isCompiled() const { return m_is_compiled; }
   BytecodeChunk* code() { return &m_code; }
   FunctionLiteral* getFunctionAST() const { return m_fn_ast; }
@@ -101,9 +72,10 @@ class Function : public Object {
   }
 
 #ifdef DEBUG
-  void printCapturedVariables();
+  void printCapturedVariables() const;
+  void printFunction();
   void disassembleChunk() const { m_code.disassembleChunk(); }
-  void printConstants() const;
+  void printConstants();
 #endif
 
  private:
@@ -113,7 +85,7 @@ class Function : public Object {
   bool m_is_compiled = false;  // for lazy compilation
   int m_num_args;
   int m_num_locals;
-  int num_captured_variables;
+  int m_num_captured_variables;
   BytecodeChunk m_code;
 
   // Constants used in this function
@@ -152,34 +124,6 @@ class Closure : public Object {
   std::vector<CapturedVariable*> m_captured_variables;
 };
 
-class Array : public Object {
- public:
-  // Array(std::initializer_list<Value> list);
-  Array() : Object{nArray} {}
-  Array(std::vector<Value> values)
-      : Object{nArray}, m_values{std::move(values)} {}
-
-  inline void insert(const Value& val) {
-    m_values.insert(m_values.begin(), val);
-  }
-
-  inline void append(const Value& val) { m_values.push_back(val); }
-  int size() const { return m_values.size(); }
-  std::vector<Value> getArray() const { return m_values; }
-  void setDelimiter(char c) { delimiter = c; }
-  Value& get(int i) { return m_values[i]; }
-
-  bool canBeNumber() const override { return true; }
-  double asNumber() const override;
-  bool asBoolean() const override;
-  std::string asString() const override;
-  size_t hash() const override;
-
- private:
-  std::vector<Value> m_values;
-  char delimiter = ' ';
-};
-
 // This class will basically be what VM is now
 class Thread : public Object {
   Thread() : Object{nThread} {}
@@ -188,6 +132,32 @@ class Thread : public Object {
   bool asBoolean() const override { return false; }
   std::string asString() const override { return "placeholder"; }
   size_t hash() const override { return 0; }
+};
+
+class Array : public Object {
+ public:
+  // Array(std::initializer_list<Value> list);
+  Array() : Object{nArray} {}
+
+  inline Value& get(const Value& v) { return m_values[v]; }
+  inline void insert(const Value& key, const Value& val) {
+    m_values.insert({key, val});
+  }
+
+  int size() const { return m_values.size(); }
+  const auto& getArray() const { return m_values; }
+  void setDelimiter(char c) { delimiter = c; }
+
+  bool canBeNumber() const override { return true; }
+  double asNumber() const override;
+  bool asBoolean() const override;
+  std::string asString() const override;
+  size_t hash() const override;
+
+ private:
+  // std::vector<Value> m_values;
+  std::unordered_map<Value, Value, Value::ValueHasher> m_values;
+  char delimiter = ' ';
 };
 
 }  // Namespace linaro

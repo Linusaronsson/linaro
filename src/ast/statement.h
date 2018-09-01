@@ -122,9 +122,7 @@ class FunctionDeclaration : public Statement {
 
   void visit(NodeVisitor& v) override { v.visitFunctionDeclaration(*this); }
   void printNode() const override {
-    std::cout << "FunctionDeclaration(";
-    m_symbol.asString();
-    std::cout << ")";
+    std::cout << "FunctionDeclaration(" << m_symbol.asString() << ")";
   }
 
  private:

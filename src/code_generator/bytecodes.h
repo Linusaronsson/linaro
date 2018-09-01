@@ -38,6 +38,7 @@ BYTECODE(neg)
 /* rvalues */
 BYTECODE(constant)
 BYTECODE(new_obj)
+BYTECODE(new_array)
 BYTECODE(TRUE)
 BYTECODE(FALSE)
 BYTECODE(null)
@@ -53,6 +54,10 @@ BYTECODE(store)
 /* Captured variable access */
 BYTECODE(cload)
 BYTECODE(cstore)
+
+/* Array access */
+BYTECODE(aload)
+BYTECODE(astore)
 
 /* Built-in functions */
 BYTECODE(print)

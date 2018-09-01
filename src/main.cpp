@@ -14,7 +14,7 @@
 #include "parsing/token.h"
 #include "vm/value.h"
 
-#define DEBUG_PARSER
+#define DEBUG_CODE_GENERATOR
 using namespace linaro;
 
 int main() {
@@ -40,6 +40,10 @@ int main() {
 
 #ifdef DEBUG_CODE_GENERATOR
   // Code generation debug code here
+  Parser parser("script.lo");
+  auto AST = parser.parse();
+  auto fn = CodeGenerator::compile(AST.get());
+  fn->printFunction();
 #endif
 
 #ifdef DEBUG_VM

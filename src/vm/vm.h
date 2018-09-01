@@ -8,7 +8,7 @@
 //#include "../compiler/chunk.h"
 #include "../linaro_utils/common.h"
 #include "../linaro_utils/utils.h"
-#include "value.h"
+#include "objects.h"
 #include "vm_context.h"
 //#include "constant_pool.h" //if VM only has pointer to const pool, consider
 // just doing a forward decl instead of this include. (class ConstantPool;)

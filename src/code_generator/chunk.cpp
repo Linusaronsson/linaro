@@ -4,7 +4,6 @@
 #include <iostream>
 
 #include "../linaro_utils/common.h"
-#include "code_generator.h"
 
 namespace linaro {
 
@@ -27,7 +26,6 @@ void BytecodeChunk::patchJump(Label& label, int extra_offset) {
 }
 
 void BytecodeChunk::disassembleChunk() const {
-  std::cout << "Bytecode disassemble:\n";
   for (unsigned i = 0; i < m_code.size();) {
     printf("%03d:   ", i);
     disassembleBytecode(static_cast<Bytecode>(m_code[i]), &i);
@@ -77,8 +75,8 @@ int BytecodeChunk::getNumArguments(Bytecode op) const {
     case Bytecode::store:
     case Bytecode::cload:
     case Bytecode::cstore:
+    case Bytecode::new_array:
       return 1;
-      return 2;
     default:
       return 0;
   }

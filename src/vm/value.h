@@ -6,39 +6,59 @@
 #include <memory>
 #include <variant>
 
-#include "object.h"
+#include "../linaro_utils/common.h"
+
+namespace linaro {
 
 #define VALUES(V) V(Number) V(Boolean) V(Object) V(Undefined) V(Noll)
+#define OBJECTS(O) O(String) O(Function) O(Array) O(Closure) O(Thread)
 
 #define V(type) n##type,
 enum class ValueType : uint8_t { VALUES(V) };
 #undef V
 
-namespace linaro {
+#define O(type) n##type,
+enum ObjectType : uint8_t { OBJECTS(O) };
+#undef O
+
+class Object {
+ public:
+  Object(ObjectType type) : m_type{type} {}
+  virtual ~Object() {}
+
+  // Helper methods
+#define O(type) \
+  inline bool is##type() const { return m_type == ObjectType::n##type; }
+  OBJECTS(O)
+#undef O
+
+  /* Object interface */
+
+  // Conversions/checking
+  virtual bool canBeNumber() const { return false; };
+  virtual double asNumber() const { return 0; };
+  virtual bool asBoolean() const { return false; };
+  virtual std::string asString() const { return "Undefined"; };
+  virtual size_t hash() const = 0;
+
+ private:
+  ObjectType m_type;
+};
+
 /* Linaro Value. Dynamically typed */
 class Value {
  public:
   // Initializing of different value type
+  // NOTE: The old constructors (with std::make_shared) could maybe be brought
+  // back if they are put in value.cpp instad? try it.
   Value() : m_type{ValueType::nUndefined} {}
-  Value(ValueType type) : m_type{type} {}
+  Value(ValueType type) : m_type{type} { CHECK(m_type == ValueType::nNoll); }
   Value(double d) : m_type{ValueType::nNumber}, as{d} {}
   Value(bool b) : m_type{ValueType::nBoolean}, as{b} {}
-  Value(const char* s)
-      : m_type{ValueType::nObject}, as{std::make_shared<String>(s)} {}
-  Value(std::string_view str)
-      : m_type{ValueType::nObject}, as{std::make_shared<String>(str)} {}
-  Value(std::shared_ptr<Object> obj) : m_type{ValueType::nObject}, as{obj} {}
+  Value(std::shared_ptr<Object>&& obj) : m_type{ValueType::nObject}, as{obj} {
+    CHECK(obj != nullptr);
+  }
 
-  Value(const String& s)
-      : m_type{ValueType::nObject}, as{std::make_shared<String>(s)} {}
-  Value(const Function& fun)
-      : m_type{ValueType::nObject}, as{std::make_shared<Function>(fun)} {}
-  Value(const Closure& cl)
-      : m_type{ValueType::nObject}, as{std::make_shared<Closure>(cl)} {}
-  Value(const Array& arr)
-      : m_type{ValueType::nObject}, as{std::make_shared<Array>(arr)} {}
-  Value(const Thread& t)
-      : m_type{ValueType::nObject}, as{std::make_shared<Thread>(t)} {}
   virtual ~Value() {}
 
   // Helper methods
@@ -53,8 +73,7 @@ class Value {
 #define O(type) \
   inline bool is##type() const { return isObject() && AS_OBJ()->is##type(); }
   OBJECTS(O)
-#undef V
-
+#undef O
   ValueType type() const { return m_type; }
 
   // Convert from Value to a reference to corresponding Object
@@ -131,6 +150,7 @@ class Value {
   ValueType m_type;
   std::variant<bool, double, std::shared_ptr<Object>> as;
 };
+
 }  // Namespace linaro
 
 #endif  // VALUE_H

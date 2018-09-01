@@ -85,7 +85,7 @@ Value Parser::constructValue(const Token& tok) {
     case TokenType::NUMBER:
       return Value(std::stod(std::string(tok.asString())));
     case TokenType::STRING:
-      return Value(tok.asString());
+      return Value(std::make_shared<String>(tok.asString()));
     case TokenType::NOLL:
       return Value(ValueType::nNoll);
     default:

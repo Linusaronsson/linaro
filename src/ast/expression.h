@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#include "../parsing/token.h"
+#include "../vm/objects.h"
 #include "ast.h"
 
 namespace linaro {
@@ -127,8 +127,10 @@ class ArrayAccess : public Expression {
         m_target(std::move(target)),
         m_index(std::move(index)) {}
 
+  Expression* target() const { return m_target.get(); }
   Expression* index() const { return m_index.get(); }
 
+  bool isValidReferenceExpression() override { return true; }
   void visit(NodeVisitor& v) override { v.visitArrayAccess(*this); }
   void printNode() const override {
     std::cout << "ArrayAccess(Target: ";

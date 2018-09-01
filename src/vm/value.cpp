@@ -4,8 +4,7 @@
 #include <cassert>
 #include <sstream>
 
-#include "../linaro_utils/common.h"
-#include "object.h"
+#include "objects.h"
 
 namespace linaro {
 
@@ -140,7 +139,7 @@ Value Value::operator+(const Value& other) {
   CHECK_FOR_NULL_VAL()
   if (canBeNumber() && other.canBeNumber() && !isString() &&
       !other.isString()) {
-    return Value(asString() + other.asString());
+    return Value(std::make_shared<String>(asString() + other.asString()));
   }
   return Value(asNumber() + other.asNumber());
 }

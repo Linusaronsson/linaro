@@ -1,13 +1,13 @@
 #include "scope.h"
-
+#include <iostream>
 namespace linaro {
 
 int Scope::defineSymbol(const std::string_view& name) {
   auto it = m_symbol_table.find(name);
   if (it == m_symbol_table.end()) {
-    m_symbol_table[name] = m_index++;
+    m_symbol_table[name] = m_index;
     m_num_locals++;
-    return 0;
+    return m_index++;
   }
 
   // symbol already exist

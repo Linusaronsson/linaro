@@ -7,8 +7,7 @@
 #include "../ast/ast.h"
 #include "../linaro_utils/utils.h"
 #include "../parsing/parser.h"
-#include "../vm/object.h"
-#include "../vm/value.h"
+#include "../vm/objects.h"
 #include "chunk.h"
 #include "scope.h"
 
@@ -45,25 +44,24 @@ struct Variable {
 
 class CodeGenerator : public NodeVisitor {
  public:
-  CodeGenerator(Function* fn, CodeGenerator* enclosing_compiler = nullptr)
-      : m_fn{fn}, m_enclosing_compiler{enclosing_compiler} {}
-  ~CodeGenerator() {}
-
   // Compiles top-level code. Calls compileFunction for every
   // nested function it encounters. This creates a new child
   // compiler that deals with that function.
   // Because it's the top-level function, it will not exist in
   // some constant pool. The caller is therefor responsible for
   // the created function.
-  std::unique_ptr<Function> compile(FunctionLiteral* AST);
+  static std::unique_ptr<Function> compile(FunctionLiteral* AST);
 
  private:
+  CodeGenerator(CodeGenerator* enclosing_compiler = nullptr)
+      : m_enclosing_compiler{enclosing_compiler} {}
+  ~CodeGenerator() {}
   // During visitation of a FunctionLiteral, a Function object is added to
   // parent constant pool (which stores the AST of the function). When the
   // function is later called, it will be looked up in the const pool to get a
   // pointer to it. Then this function is called by passing it that pointer in
   // order to compile it.
-  void compileFunction(Function* fn);
+  void compileFunction(CodeGenerator* cg, FunctionLiteral* fn);
 
   // Error reporting during AST visit
   void semanticError(const Location& loc, const char* format, ...) const;
@@ -89,10 +87,9 @@ class CodeGenerator : public NodeVisitor {
   // if not, add it.
   int addConstantIfNew(const Value& val);
 
-  // This is used for string and number constants, because they should uniquely
-  // exist in the const pool.
-  // Other values will always be unique by default anyway so generateConstants()
-  // will be used for those.
+  // This is used for string and number constants, because they should
+  // uniquely exist in the const pool. Other values will always be unique by
+  // default anyway so generateConstants() will be used for those.
   inline void generateConstantIfNew(const Value& val);
 
   // Symbols
