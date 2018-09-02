@@ -17,7 +17,7 @@ void BytecodeChunk::patchJump(Label& label, int extra_offset) {
   uint32_t current_offset = m_code.size() + extra_offset;
   size_t j = label.offset();
   // Patch jump adress
-  for (size_t i = j; i < j + 4; i++) {
+  for (size_t i = j; i < j + 2; i++) {
     uint8_t op = current_offset;
     current_offset >>= 8;
     m_code[i] = op;
@@ -40,11 +40,11 @@ void BytecodeChunk::disassembleBytecode(Bytecode op, unsigned* i) const {
     case 0:
       break;
     case 1:
-      printf("   %d", read16Bits(*i));
+      printf(" %d", read16Bits(*i));
       *i += 2;
       break;
     case 2:
-      printf("   %d   %d", read16Bits(*i), read16Bits(*i + 2));
+      printf(" %d %d", read16Bits(*i), read16Bits(*i + 2));
       *i += 4;
       break;
     default:

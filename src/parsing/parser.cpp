@@ -267,7 +267,7 @@ ExpressionPtr Parser::parseUnaryPostfixOperation(ExpressionPtr& left,
     case TokenType::LSB: {
       // Array indexing [expr]
       auto expr = std::make_unique<ArrayAccess>(left, parseExpression());
-      consume(TokenType::LSB, "Expected ']'");
+      consume(TokenType::RSB, "Expected ']'");
       return expr;
     }
     case TokenType::INCR:

@@ -101,6 +101,7 @@ class ArrayLiteral : public Expression {
     m_elements.push_back(std::move(element));
   }
 
+  int size() const { return m_elements.size(); }
   const auto& elements() const { return m_elements; }
 
   void visit(NodeVisitor& v) override { v.visitArrayLiteral(*this); }
@@ -296,5 +297,5 @@ class Call : public Expression {
   std::vector<ExpressionPtr> m_args;
 };
 
-}  // namespace linaro
+}  // namespace Linaro
 #endif  // EXPRESSION_H

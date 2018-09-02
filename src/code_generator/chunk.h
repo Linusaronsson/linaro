@@ -41,6 +41,7 @@ class BytecodeChunk {
   BytecodeChunk() {}
   const std::vector<uint8_t>& code() { return m_code; }
   const Location& getLocation(int i) { return *m_loc[i]; }
+  inline uint8_t operator[](int i) const { return m_code[i]; }
   size_t chunkSize() const { return m_code.size(); }
   size_t currentOffset() const { return m_code.size() + 1; }
   void patchJump(Label& label, int extra_offset = 0);

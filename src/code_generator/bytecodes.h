@@ -11,6 +11,7 @@ BYTECODE(mod)
 BYTECODE(mul)
 BYTECODE(div)
 BYTECODE(exp)
+BYTECODE(neg)
 
 /* Boolean */
 BYTECODE(neq)
@@ -21,8 +22,6 @@ BYTECODE(gt)
 BYTECODE(gte)
 
 /* Logical */
-BYTECODE(OR)
-BYTECODE(AND)
 BYTECODE(NOT)
 
 /* Conversions (converts TOS) */
@@ -32,8 +31,6 @@ BYTECODE(to_bool)
 BYTECODE(jmp)
 BYTECODE(jmp_true)
 BYTECODE(jmp_false)
-
-BYTECODE(neg)
 
 /* rvalues */
 BYTECODE(constant)

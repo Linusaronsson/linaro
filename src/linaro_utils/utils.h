@@ -51,6 +51,7 @@ class Stack {
     m_stack.pop_back();
     return val;
   }
+  inline void pop_back() { m_stack.pop_back(); }
   inline T &peek() { return m_stack.back(); }
   void reset() { m_stack.clear(); }
   size_t size() const { return m_stack.size(); }

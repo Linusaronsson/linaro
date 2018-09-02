@@ -5,26 +5,22 @@
 #include <string>
 #include <variant>
 
-//#include "../compiler/chunk.h"
 #include "../linaro_utils/common.h"
 #include "../linaro_utils/utils.h"
 #include "objects.h"
 #include "vm_context.h"
-//#include "constant_pool.h" //if VM only has pointer to const pool, consider
-// just doing a forward decl instead of this include. (class ConstantPool;)
 
-class ConstantPool;
 class BytecodeChunk;
 
 namespace Linaro {
 
 struct StackFrame {
-  StackFrame(Closure *closure) : m_closure{closure} {
-    locals.resize(m_closure->fun()->numLocals());
+  StackFrame(Closure *closure) : closure{closure} {
+    locals.resize(closure->fun()->numLocals());
   }
 
   uint32_t ip;
-  Closure *m_closure;
+  Closure *closure;
   std::vector<Value> locals;
 };
 
@@ -69,29 +65,29 @@ class VM {
   // this will be called recursively for the function's bytecodechunk.
   VMEndingStatus execute(BytecodeChunk *code);
 
-  // Function calls
-  void call(Function *fn);
-  void callValue(Value *v);
+  // Function call
+  void call(const Value &v);
 
   // Extracting data from bytecode chunk
   inline uint8_t readByte();
-  inline uint16_t read16Bits();
-  inline uint32_t read32Bits();
+  inline uint16_t read16BitOperand();
+  inline uint32_t read32BitOperand();
 
   inline Function *getEnclosingFunction();
 
   // Get a constant from the constant pool of the currently running function
-  inline Value getConstant();
+  inline Value &getConstant();
 
   // Get the constant pool of the currently running function.
   inline std::vector<Value> &getConstants();
 
-  // Get the local variable space of the StackFrame on the top of the call
-  // stack.
-  inline std::vector<Value> &getLocals();
+  // Get the local variable space/captured variable of the StackFrame on the
+  // top of the call stack.
+  inline Value *getLocal(int i);
+  inline Value *getCapturedVariable(int i);
 
   // Evaluating a binary operation
-  void binaryOperation(Bytecode type);
+  void binaryOperation(Bytecode op);
 
   // Find the captured variable from the open captured variables
   CapturedVariable *captureVariable(int index);
@@ -100,13 +96,13 @@ class VM {
   void runtimeError(const char *format, ...);
 
   // Top level chunk
-  BytecodeChunk *main_code;
+  BytecodeChunk *m_main_code;
 
   // Code currently executing
-  BytecodeChunk *current_chunk;
+  BytecodeChunk *m_current_chunk;
 
   // Instruction pointer into currently executing chunk
-  uint32_t ip;
+  uint32_t m_ip;
 
   // Global variable space
   Value *m_globals;
@@ -119,7 +115,7 @@ class VM {
 
   // This is where all open captured variables will be stored.
   // It should be a linked list.
-  std::vector<CapturedVariable> open_captured_variables;
+  std::vector<CapturedVariable> m_open_captured_variables;
 };
 
 }  // namespace Linaro

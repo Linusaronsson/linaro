@@ -27,7 +27,9 @@ bool Expression::toBooleanIsTrue() {
   return isLiteral() && asLiteral()->value().asBoolean();
 }
 
-bool Expression::toBooleanIsFalse() { return !toBooleanIsTrue(); }
+bool Expression::toBooleanIsFalse() {
+  return isLiteral() && !asLiteral()->value().asBoolean();
+}
 
 void FunctionLiteral::printNode() const {
   std::cout << "FunctionLiteral: {\n";
@@ -50,4 +52,4 @@ bool BinaryOperation::isValidReferenceExpression() {
           m_right->isIdentifier());
 }
 
-}  // namespace linaro
+}  // namespace Linaro

@@ -29,7 +29,7 @@ void CodeGenerator::compileFunction(CodeGenerator* cg, FunctionLiteral* fn) {
 
   // Define parameters in function scope
   for (const auto& arg : fn->args()) {
-    cg->defineSymbol(arg.name(), arg.loc());
+    cg->declareVariable(arg.name(), arg.loc());
   }
 
   fn->block()->visit(*cg);
@@ -104,8 +104,8 @@ void CodeGenerator::generateConstantIfNew(const Value& val) {
   generateBytecode(Bytecode::constant, addConstantIfNew(val));
 }
 
-int CodeGenerator::defineSymbol(const std::string_view& name,
-                                const Location& loc) {
+int CodeGenerator::declareVariable(const std::string_view& name,
+                                   const Location& loc) {
   int res = m_current_scope->defineSymbol(name);
   if (res == -1) {
     semanticError(loc, "Identifier already taken: '%s'",
@@ -118,9 +118,9 @@ const Variable* CodeGenerator::addVariable(int index, VariableOrigin origin) {
   return &(*m_variables.insert({index, origin}).first);
 }
 
-const Variable* CodeGenerator::resolveSymbol(const std::string_view& name,
-                                             const Location& loc,
-                                             bool is_assign) {
+const Variable* CodeGenerator::resolveVariable(const std::string_view& name,
+                                               const Location& loc,
+                                               bool is_assign) {
   int arg = m_current_scope->resolveSymbol(name);
   if (arg != -1)
     return addVariable(arg, m_enclosing_compiler == nullptr
@@ -142,7 +142,7 @@ const Variable* CodeGenerator::resolveSymbol(const std::string_view& name,
 
   // Check enclosing function
   const Variable* var =
-      m_enclosing_compiler->resolveSymbol(name, loc, is_assign);
+      m_enclosing_compiler->resolveVariable(name, loc, is_assign);
   // If var is nullptr we can just return it because the enclosing compiler has
   // already reported that the symbol wasn't defined.
   if (var == nullptr || var->is_top_level())
@@ -208,8 +208,9 @@ void CodeGenerator::visitFunctionLiteral(const FunctionLiteral& node) {
 }
 
 void CodeGenerator::visitArrayLiteral(const ArrayLiteral& node) {
-  for (const auto& e : node.elements()) {
-    e->visit(*this);
+  const auto& elements = node.elements();
+  for (int i = node.size() - 1; i >= 0; i--) {
+    elements[i]->visit(*this);
   }
   generateBytecode(Bytecode::new_array, node.elements().size());
 }
@@ -221,7 +222,7 @@ void CodeGenerator::visitArrayAccess(const ArrayAccess& node) {
 }
 
 void CodeGenerator::visitIdentifier(const Identifier& node) {
-  const Variable* var = resolveSymbol(node.name(), node.loc(), false);
+  const Variable* var = resolveVariable(node.name(), node.loc(), false);
   if (var == nullptr) return;
   Bytecode op;
   switch (var->origin()) {
@@ -395,7 +396,7 @@ void CodeGenerator::visitAssignmentTarget(Expression* target,
                                           const Location& loc) {
   if (target->isIdentifier()) {
     Identifier* id = target->asIdentifier();
-    const Variable* var = resolveSymbol(id->name(), id->loc(), true);
+    const Variable* var = resolveVariable(id->name(), id->loc(), true);
     int index;
     Bytecode op;
     if (var == nullptr) {
@@ -462,7 +463,7 @@ void CodeGenerator::visitExpressionStatement(const ExpressionStatement& stmt) {
 }
 
 void CodeGenerator::visitFunctionDeclaration(const FunctionDeclaration& node) {
-  defineSymbol(node.symbol().asString(), node.loc());
+  declareVariable(node.symbol().asString(), node.loc());
 }
 
 void CodeGenerator::visitReturnStatement(const ReturnStatement& node) {
@@ -477,12 +478,15 @@ void CodeGenerator::visitPrintStatement(const PrintStatement& node) {
 
 void CodeGenerator::visitIfStatement(const IfStatement& node) {
   if (node.expr()->toBooleanIsTrue()) {
+    std::cout << "RAHCED1" << std::endl;
     node.ifBlock()->visit(*this);
   } else if (node.expr()->toBooleanIsFalse()) {
     if (node.hasElseBlock()) {
+      std::cout << "RAHCED2" << std::endl;
       node.elseBlock()->visit(*this);
     }
   } else {
+    std::cout << "RAHCED3" << std::endl;
     // Visit condition.
     node.expr()->visit(*this);
     Label else_label(code()->currentOffset());

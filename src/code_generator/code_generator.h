@@ -96,11 +96,11 @@ class CodeGenerator : public NodeVisitor {
   // default anyway so generateConstants() will be used for those.
   inline void generateConstantIfNew(const Value& val);
 
-  // Symbols
-  int defineSymbol(const std::string_view& name, const Location& loc);
+  // Variables
+  int declareVariable(const std::string_view& name, const Location& loc);
   inline const Variable* addVariable(int index, VariableOrigin origin);
-  const Variable* resolveSymbol(const std::string_view& name,
-                                const Location& loc, bool is_assign);
+  const Variable* resolveVariable(const std::string_view& name,
+                                  const Location& loc, bool is_assign);
   int numLocals() const { return m_current_scope->numLocals(); }
 
   // Scopes
