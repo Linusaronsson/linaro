@@ -69,9 +69,9 @@ class Node {
   enum NodeType : uint8_t { AST_NODES(T) };
 #undef T
 
-#define T(type)                                              \
-  inline bool is##type() const { return m_type == n##type; } \
-  inline type* as##type();
+#define T(type)                                       \
+  bool is##type() const { return m_type == n##type; } \
+  type* as##type();
   AST_NODES(T)
 #undef T
 

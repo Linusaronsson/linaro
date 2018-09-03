@@ -143,6 +143,8 @@ class ArrayAccess : public Expression {
 
   bool isValidReferenceExpression() override { return true; }
   void visit(NodeVisitor& v) override { v.visitArrayAccess(*this); }
+
+#ifdef DEBUG
   void printNode() const override {
     std::cout << "ArrayAccess(Target: ";
     m_target->printNode();
@@ -150,6 +152,7 @@ class ArrayAccess : public Expression {
     m_index->printNode();
     std::cout << ')';
   }
+#endif
 
  private:
   ExpressionPtr m_target;
@@ -167,7 +170,10 @@ class Identifier : public Expression {
   const Location& loc() const { return m_tok.getLocation(); }
 
   void visit(NodeVisitor& v) override { v.visitIdentifier(*this); }
+
+#ifdef DEBUG
   void printNode() const override { std::cout << "Symbol(" << name() << ")"; }
+#endif
 
  private:
   const Token m_tok;
@@ -191,6 +197,8 @@ class BinaryOperation : public Expression {
   void setRightOperand(ExpressionPtr op) { m_right = std::move(op); }
 
   void visit(NodeVisitor& v) override { v.visitBinaryOperation(*this); }
+
+#ifdef DEBUG
   void printNode() const override {
     std::cout << "BinOp(";
     m_left->printNode();
@@ -198,6 +206,7 @@ class BinaryOperation : public Expression {
     m_right->printNode();
     std::cout << ")";
   }
+#endif
 
  private:
   ExpressionPtr m_left;
@@ -223,6 +232,8 @@ class UnaryOperation : public Expression {
   bool isPostfix() const { return m_is_postfix; }
 
   void visit(NodeVisitor& v) override { v.visitUnaryOperation(*this); }
+
+#ifdef DEBUG
   void printNode() const override {
     if (m_is_postfix) {
       std::cout << "PostfixUnaryOp('";
@@ -235,6 +246,7 @@ class UnaryOperation : public Expression {
       std::cout << ")";
     }
   }
+#endif
 
  private:
   ExpressionPtr m_operand;
@@ -256,6 +268,8 @@ class Assignment : public Expression {
   Expression* rightOperand() const { return m_right.get(); }
 
   void visit(NodeVisitor& v) override { v.visitAssignment(*this); }
+
+#ifdef DEBUG
   void printNode() const override {
     std::cout << "VarAssignment(";
     m_target->printNode();
@@ -265,6 +279,7 @@ class Assignment : public Expression {
     m_right->printNode();
     std::cout << ")";
   }
+#endif
 
  private:
   ExpressionPtr m_target;  // must be lvalue
@@ -287,6 +302,8 @@ class Call : public Expression {
   bool isValidReferenceIdentifier();
 
   void visit(NodeVisitor& v) override { v.visitCall(*this); }
+
+#ifdef DEBUG
   void printNode() const override {
     std::cout << "FunctionCall(";
     std::cout << "Caller: ";
@@ -301,6 +318,7 @@ class Call : public Expression {
     }
     std::cout << ")";
   }
+#endif
 
  private:
   ExpressionPtr m_caller;

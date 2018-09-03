@@ -32,6 +32,8 @@ class Block : public Statement {
   }
 
   void visit(NodeVisitor& v) override { v.visitBlock(*this); }
+
+#ifdef DEBUG
   void printNode() const override {
     std::cout << "Block: {\n--- Declarations ---\n";
     for (const auto& stat : declarations) {
@@ -46,6 +48,7 @@ class Block : public Statement {
     }
     std::cout << "} // End of Block\n";
   }
+#endif
 
  private:
   // Declarations are visited first for forward ref.
@@ -70,7 +73,10 @@ class ExpressionStatement : public Statement {
   Expression* expr() const { return m_expr.get(); }
   void addExpression(ExpressionPtr& expr) { m_expr = std::move(expr); }
   void visit(NodeVisitor& v) override { v.visitExpressionStatement(*this); }
+
+#ifdef DEBUG
   void printNode() const override { m_expr->printNode(); }
+#endif
 
  private:
   ExpressionPtr m_expr;
@@ -84,11 +90,14 @@ class ReturnStatement : public Statement {
   Expression* expr() const { return return_expr.get(); }
 
   void visit(NodeVisitor& v) override { v.visitReturnStatement(*this); }
+
+#ifdef DEBUG
   void printNode() const override {
     std::cout << "Return(";
     return_expr->printNode();
     std::cout << ")";
   }
+#endif
 
  private:
   ExpressionPtr return_expr;
@@ -102,11 +111,14 @@ class PrintStatement : public Statement {
   Expression* expr() const { return print_expr.get(); }
 
   void visit(NodeVisitor& v) override { v.visitPrintStatement(*this); }
+
+#ifdef DEBUG
   void printNode() const override {
     std::cout << "Print(";
     print_expr->printNode();
     std::cout << ")";
   }
+#endif
 
  private:
   ExpressionPtr print_expr;
@@ -121,9 +133,12 @@ class FunctionDeclaration : public Statement {
   const Location& loc() const { return m_symbol.getLocation(); }
 
   void visit(NodeVisitor& v) override { v.visitFunctionDeclaration(*this); }
+
+#ifdef DEBUG
   void printNode() const override {
     std::cout << "FunctionDeclaration(" << m_symbol.asString() << ")";
   }
+#endif
 
  private:
   Token m_symbol;
@@ -148,6 +163,8 @@ class IfStatement : public Statement {
   Block* elseBlock() const { return m_else_block.get(); }
 
   void visit(NodeVisitor& v) override { v.visitIfStatement(*this); }
+
+#ifdef DEBUG
   void printNode() const override {
     std::cout << "If_Statement[(";
     m_condition->printNode();
@@ -161,6 +178,7 @@ class IfStatement : public Statement {
     }
     std::cout << "]";
   }
+#endif
 
  private:
   ExpressionPtr m_condition;
@@ -179,6 +197,8 @@ class WhileStatement : public Statement {
   Block* whileBlock() const { return m_while_block.get(); }
 
   void visit(NodeVisitor& v) override { v.visitWhileStatement(*this); }
+
+#ifdef DEBUG
   void printNode() const override {
     std::cout << "While_Statement[(";
     m_boolean_expr->printNode();
@@ -186,11 +206,12 @@ class WhileStatement : public Statement {
     m_while_block->printNode();
     std::cout << "}]";
   }
+#endif
 
  private:
   ExpressionPtr m_boolean_expr;
   BlockPtr m_while_block;
 };
 
-}  // namespace linaro
+}  // namespace Linaro
 #endif  // STATEMENT_H
