@@ -16,9 +16,9 @@ Lexer::Lexer(const std::string& source) : m_source_code{source} {
 }
 
 void Lexer::initLexer(const char* filename) {
-  cursor = start = m_source_code.c_str();
-  current_char = m_source_code[0];
-  current_location = {filename, 0, 0};
+  m_cursor = m_start = m_source_code.c_str();
+  m_current_char = m_source_code[0];
+  m_current_location = {filename, 0, 0};
 }
 
 void Lexer::lexicalError(const Location& loc, const char* format, ...) {
@@ -29,7 +29,7 @@ void Lexer::lexicalError(const Location& loc, const char* format, ...) {
 }
 
 char Lexer::peek(unsigned int distance) {
-  return m_source_code[current + distance];
+  return m_source_code[m_current + distance];
 }
 
 bool Lexer::isDigit(char d) { return d >= '0' && d <= '9'; }
@@ -37,21 +37,22 @@ bool Lexer::isAlpha(char d) {
   return (d >= 'a' && d <= 'z') || (d >= 'A' && d <= 'Z') || (d == '_');
 }
 
-size_t Lexer::offsetFromCursor() const { return (start + current) - cursor; }
-void Lexer::syncCursor() { cursor += offsetFromCursor(); }
+size_t Lexer::offsetFromCursor() const {
+  return (m_start + m_current) - m_cursor;
+}
+void Lexer::syncCursor() { m_cursor += offsetFromCursor(); }
 Token Lexer::constructToken(TokenType type) {
   switch (type) {
     case TokenType::STRING:
     case TokenType::SYMBOL:
     case TokenType::NUMBER:
     case TokenType::UNKNOWN: {
-      // +1 and -2 for avoiding the quotation marks
-      std::string_view sv{cursor, offsetFromCursor()};
+      std::string_view sv{m_cursor, offsetFromCursor()};
       syncCursor();
-      return Token(type, current_location, sv);
+      return Token(type, m_current_location, sv);
     }
     default:
-      return Token(type, current_location);
+      return Token(type, m_current_location);
   }
 }
 
@@ -59,12 +60,12 @@ Token Lexer::constructToken(TokenType type) {
 // whitespace.
 bool Lexer::skipWhitespace() {
   bool had_new_line = false;
-  while (current_char == ' ' || current_char == '\t' || current_char == '\r' ||
-         current_char == '\n') {
-    if (current_char == '\n') {
+  while (m_current_char == ' ' || m_current_char == '\t' ||
+         m_current_char == '\r' || m_current_char == '\n') {
+    if (m_current_char == '\n') {
       had_new_line = true;
-      current_location.line++;
-      current_location.col = 0;
+      m_current_location.line++;
+      m_current_location.col = 0;
     }
     advance();
   }
@@ -72,7 +73,7 @@ bool Lexer::skipWhitespace() {
 }
 
 Token Lexer::nextToken() {
-  Location save_loc = current_location;
+  Location save_loc = m_current_location;
   bool b = skipWhitespace();
   syncCursor();
   Token temp = getNextToken();
@@ -82,22 +83,22 @@ Token Lexer::nextToken() {
 }
 
 Token Lexer::getNextToken() {
-  current_location.col++;
-  while (current_char != '\0') {
-    if (isDigit(current_char)) {
+  m_current_location.col++;
+  while (m_current_char != '\0') {
+    if (isDigit(m_current_char)) {
       return number();
     }
 
-    if (isAlpha(current_char)) {
+    if (isAlpha(m_current_char)) {
       return identifier();  // reserved keyword or symbol
     }
 
-    if (current_char == '"') {
+    if (m_current_char == '"') {
       advance();
       return linaroString();
     }
 
-    switch (current_char) {
+    switch (m_current_char) {
       // Guaranteed single char tokens
       case '*':
         advance();
@@ -146,7 +147,7 @@ Token Lexer::getNextToken() {
         return constructToken(TokenType::AMPERSAND);
       // EOS (semicolon).
       case ';':
-        while (current_char == ';') advance();
+        while (m_current_char == ';') advance();
         return constructToken(TokenType::SEMICOLON);
 
       // Potential double char tokens
@@ -208,22 +209,22 @@ Token Lexer::getNextToken() {
 }
 
 void Lexer::advance(unsigned int steps) {
-  if (current_char == '\0') return;
-  current += steps;
-  current_char = m_source_code[current];
+  if (m_current_char == '\0') return;
+  m_current += steps;
+  m_current_char = m_source_code[m_current];
 }
 
 Token Lexer::number() {
-  while (isDigit(current_char)) {
+  while (isDigit(m_current_char)) {
     advance();
   }
 
   // decimal point (This means it's a float, but all numbers are stored as
   // doubles for now. Wil be changed when optimizing the performance of the
   // interpreter.)
-  if (current_char == '.' && isDigit(peek())) {
+  if (m_current_char == '.' && isDigit(peek())) {
     advance();
-    while (isDigit(current_char)) {
+    while (isDigit(m_current_char)) {
       advance();
     }
   }
@@ -232,11 +233,11 @@ Token Lexer::number() {
 }
 
 Token Lexer::identifier() {
-  while (isAlpha(current_char) || isDigit(current_char)) {
+  while (isAlpha(m_current_char) || isDigit(m_current_char)) {
     advance();
   }
 
-  std::string_view result{cursor, offsetFromCursor()};
+  std::string_view result{m_cursor, offsetFromCursor()};
 
   // If it's a reserved keyword:
   if (result == "if") return constructToken(TokenType::IF);
@@ -267,20 +268,33 @@ Token Lexer::identifier() {
 }
 
 Token Lexer::linaroString() {
+  std::string str;
   for (;;) {
-    if (current_char == '"') {
+    if (m_current_char == '"') {
       advance();
       break;
     }
-    if (current_char == '\0') {
-      lexicalError(current_location, "Unterminated string");
+    if (m_current_char == '\0') {
+      lexicalError(m_current_location, "Unterminated string");
       break;
+    }
+    if (m_current_char == '\\') {
+      switch (peek()) {
+        case 'n':
+          str.push_back('\n');
+          break;
+        case 't':
+          str.push_back('\t');
+          break;
+      }
+      advance();
+    } else {
+      str.push_back(m_current_char);
     }
     advance();
   }
 
-  return Token(TokenType::STRING,
-               std::string_view{cursor + 1, offsetFromCursor() - 2});
+  return Token(TokenType::STRING, std::string_view(str));
 }
 
 }  // namespace Linaro

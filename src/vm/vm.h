@@ -52,8 +52,7 @@ class VM {
   VM() {}
   int operandStackSize() { return m_operand_stack.size(); }
   // Create a vm instance from source file and execute
-  VMEndingStatus interpret(const std::string &source,
-                           const char *filename = nullptr);
+  VMEndingStatus interpret(const char *filename);
 
   // Execute from predefined vm environment (?)
   VMEndingStatus interpret(const VMContext &vm_context);
@@ -65,8 +64,9 @@ class VM {
   // this will be called recursively for the function's bytecodechunk.
   VMEndingStatus execute(BytecodeChunk *code);
 
-  // Function call
-  void call(const Value &v);
+  // Function call/return
+  VMEndingStatus call(Closure &v);
+  void returnFromFunction();
 
   // Extracting data from bytecode chunk
   inline uint8_t readByte();
@@ -95,9 +95,6 @@ class VM {
   // Runtime error
   void runtimeError(const char *format, ...);
 
-  // Top level chunk
-  BytecodeChunk *m_main_code;
-
   // Code currently executing
   BytecodeChunk *m_current_chunk;
 
@@ -105,7 +102,7 @@ class VM {
   uint32_t m_ip;
 
   // Global variable space
-  Value *m_globals;
+  std::vector<Value> m_globals;
 
   // Operand stack
   Stack<Value> m_operand_stack;

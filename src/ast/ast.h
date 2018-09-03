@@ -63,23 +63,27 @@ class NodeVisitor {
 
 class Node {
  public:
+  virtual ~Node() {}
+
 #define T(type) n##type,
   enum NodeType : uint8_t { AST_NODES(T) };
 #undef T
 
-#define T(type)                                       \
-  bool is##type() const { return m_type == n##type; } \
-  type* as##type();
+#define T(type)                                              \
+  inline bool is##type() const { return m_type == n##type; } \
+  inline type* as##type();
   AST_NODES(T)
 #undef T
 
   bool isDeclaration() const { return m_type == nFunctionDeclaration; }
-
   NodeType type() const { return m_type; }
+
   virtual void visit(NodeVisitor& v) = 0;
   //  virtual const Location& location() const = 0;
+
+#ifdef DEBUG
   virtual void printNode() const = 0;
-  virtual ~Node() {}
+#endif
 
  protected:
   Node(NodeType type) : m_type(type) {}
@@ -88,5 +92,5 @@ class Node {
   NodeType m_type;
 };
 
-}  // namespace linaro
+}  // namespace Linaro
 #endif  // AST_H

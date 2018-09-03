@@ -1,17 +1,34 @@
 #include "vm.h"
 
+#include "../code_generator/chunk.h"
 #include "../code_generator/code_generator.h"
 
 namespace Linaro {
 
-VMEndingStatus VM::interpret(const std::string& source, const char* filename) {
+VMEndingStatus VM::interpret(const char* filename) {
+  CHECK(filename != nullptr);
   // initialize VM (todo)
+  Parser p(filename);
+  auto AST = p.parse();
+  auto top_level_fn = CodeGenerator::compile(AST.get());
+  Closure top_level_closure(top_level_fn.get());
+  m_call_stack.push(StackFrame(&top_level_closure));
+  m_globals.resize(top_level_fn->numLocals());
+
+  auto functions = CodeGenerator::getFunctions();
+  std::cout << "\n---- PROGRAM DEBUG ----\n\n";
+  for (const auto& fn : functions) {
+    fn->printFunction();
+  }
+
+  std::cout << "\n---- OUTPUT ----\n\n";
 
   // run the code
-  VMEndingStatus res = execute(m_main_code);
+  VMEndingStatus res = execute(top_level_fn->code());
 
   // turn off vm (todo)
-  delete m_globals;
+  m_operand_stack.reset();
+  m_call_stack.reset();
 
   // return status code
   return res;
@@ -150,17 +167,23 @@ void VM::binaryOperation(Bytecode op) {
   m_operand_stack.push(result);
 }
 
-void VM::call(const Value& v) {
-  Closure& closure = v.valueTo<Closure>();
+VMEndingStatus VM::call(Closure& closure) {
   m_call_stack.push(StackFrame(&closure));
   for (int i = 0; i < closure.fun()->numArgs(); i++) {
-    *getLocal(i) = m_operand_stack.peek();
-    m_operand_stack.pop_back();
+    *getLocal(i) = m_operand_stack.pop();
   }
-  execute(closure.fun()->code());
+  return execute(closure.fun()->code());
+}
+
+void VM::returnFromFunction() {
+  // Close the captured variables
+
+  // Remove stack frame from call stack
+  m_call_stack.pop_back();
 }
 
 VMEndingStatus VM::execute(BytecodeChunk* _code) {
+  m_ip = 0;
   m_current_chunk = _code;
   const std::vector<uint8_t>& code = _code->code();
   for (;;) {
@@ -262,7 +285,7 @@ VMEndingStatus VM::execute(BytecodeChunk* _code) {
         int size = read16BitOperand();
         auto arr = std::make_shared<Array>();
         // 'i' will be int when values can contain integers.
-        for (double i = size; i < size; i++) {
+        for (double i = 0; i < size; i++) {
           arr->insert(Value(i), m_operand_stack.pop());
         }
         m_operand_stack.push(Value(arr));
@@ -313,7 +336,7 @@ VMEndingStatus VM::execute(BytecodeChunk* _code) {
         std::cout << m_operand_stack.pop();
         break;
       case Bytecode::ret:
-        m_call_stack.pop_back();
+        returnFromFunction();
         break;
       case Bytecode::call:
         UNREACHABLE();
@@ -322,7 +345,7 @@ VMEndingStatus VM::execute(BytecodeChunk* _code) {
         Value closure = m_operand_stack.pop();
         if (!closure.isClosure())
           runtimeError("Attempted invoking non-callable object.");
-        call(closure);
+        call(closure.valueTo<Closure>());
         break;
       }
       case Bytecode::closure: {
@@ -362,12 +385,12 @@ VMEndingStatus VM::execute(BytecodeChunk* _code) {
         m_operand_stack.push(Value(closure));
       } break;
       case Bytecode::halt:
-        break;
+        return VMEndingStatus::VM_SUCCESS;
       default:
         UNREACHABLE();
     }
-    return VMEndingStatus::VM_SUCCESS;
   }
+  return VMEndingStatus::VM_SUCCESS;
 }
 
 }  // namespace Linaro

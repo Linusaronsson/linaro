@@ -25,6 +25,7 @@ void BytecodeChunk::patchJump(Label& label, int extra_offset) {
   label.bindLabel(current_offset);
 }
 
+#ifdef DEBUG
 void BytecodeChunk::disassembleChunk() const {
   for (unsigned i = 0; i < m_code.size();) {
     printf("%03d:   ", i);
@@ -53,7 +54,7 @@ void BytecodeChunk::disassembleBytecode(Bytecode op, unsigned* i) const {
   std::cout << '\n';
 }
 
-const char* BytecodeChunk::bytecodeToString(Bytecode op) const {
+const char* BytecodeChunk::bytecodeToString(Bytecode op) {
   CHECK(op < Bytecode::NUM_BYTECODES);
   return bytecode_to_string[(uint8_t)op];
 }
@@ -81,5 +82,6 @@ int BytecodeChunk::getNumArguments(Bytecode op) const {
       return 0;
   }
 }
+#endif
 
 }  // namespace Linaro

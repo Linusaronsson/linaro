@@ -68,14 +68,15 @@ class BytecodeChunk {
     add16Bits((uint16_t)(arg >> 16));
   }
 
+#ifdef DEBUG
   // Debug
   void disassembleChunk() const;
+  static const char* bytecodeToString(Bytecode op);
+  inline void disassembleBytecode(Bytecode op, unsigned* i) const;
+  int getNumArguments(Bytecode op) const;
+#endif
 
  private:
-  inline void disassembleBytecode(Bytecode op, unsigned* i) const;
-  inline const char* bytecodeToString(Bytecode op) const;
-  int getNumArguments(Bytecode op) const;
-
   std::vector<uint8_t> m_code;  // the code
   // Each bytecode is associated with a location in the source file.
   // This is used for reporting potential errors at runtime.

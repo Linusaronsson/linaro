@@ -15,7 +15,7 @@ class Lexer {
   Lexer(const char* filename);
   Lexer(const std::string& source);
   ~Lexer() {}
-  Location& getLocation() { return current_location; }
+  Location& getLocation() { return m_current_location; }
   Token nextToken();
   void readSource(const char* file) { m_source_code = readFile(file); }
 
@@ -42,11 +42,11 @@ class Lexer {
   inline Token constructToken(TokenType type);
 
   std::string m_source_code;
-  const char* start;
-  const char* cursor;
-  size_t current = 0;
-  char current_char;
-  Location current_location;
+  const char* m_start;
+  const char* m_cursor;
+  size_t m_current = 0;
+  char m_current_char;
+  Location m_current_location;
 };  // namespace linaro
 
 }  // namespace Linaro

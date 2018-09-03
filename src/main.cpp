@@ -13,8 +13,9 @@
 #include "parsing/lexer.h"
 #include "parsing/token.h"
 #include "vm/value.h"
+#include "vm/vm.h"
 
-#define DEBUG_CODE_GENERATOR
+#define DEBUG_VM
 using namespace Linaro;
 
 int main() {
@@ -53,6 +54,8 @@ int main() {
 #endif
 
 #ifdef DEBUG_VM
+  VM vm;
+  vm.interpret("script.lo");
   // VM debug code here
 #endif
 

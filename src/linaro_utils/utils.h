@@ -46,8 +46,8 @@ template <class T>
 class Stack {
  public:
   inline void push(const T &val) { m_stack.push_back(val); }
-  inline T &pop() {
-    Value &val = m_stack.back();
+  inline T pop() {
+    Value val = m_stack.back();
     m_stack.pop_back();
     return val;
   }

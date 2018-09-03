@@ -116,7 +116,7 @@ std::string Value::asString() const {
     case ValueType::nUndefined:
       return "Undefined";
     default:
-      // assert(std::holds_alternative<std::shared_ptr<Object>>(as));
+      CHECK(std::holds_alternative<std::shared_ptr<Object>>(as));
       return AS_OBJ()->asString();
   }
   UNREACHABLE();
@@ -135,16 +135,16 @@ Value Value::operator-() const {
     return Value();                 \
   }
 
+#define bin_op(op) this->asNumber() op other.asNumber()
+
 Value Value::operator+(const Value& other) {
   CHECK_FOR_NULL_VAL()
-  if (canBeNumber() && other.canBeNumber() && !isString() &&
-      !other.isString()) {
+  if (isString() || other.isString() || !canBeNumber() ||
+      !other.canBeNumber()) {
     return Value(std::make_shared<String>(asString() + other.asString()));
   }
-  return Value(asNumber() + other.asNumber());
+  return Value(bin_op(+));
 }
-
-#define bin_op(op) this->asNumber() op other.asNumber()
 
 Value Value::operator-(const Value& other) {
   CHECK_FOR_NULL_VAL()

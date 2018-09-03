@@ -36,9 +36,12 @@ class Literal : public Expression {
   bool isTrue() const { return !m_val.asBoolean(); }
 
   void visit(NodeVisitor& v) override { v.visitLiteral(*this); }
+
+#ifdef DEBUG
   void printNode() const override {
     std::cout << "Literal(" << m_val.asString() << ")";
   }
+#endif
 
  private:
   Location m_loc;
@@ -54,7 +57,9 @@ class NullExpression : public Expression {
  public:
   NullExpression() : Expression(nNullExpression) {}
   void visit(NodeVisitor& v) override { v.visitNullExpression(*this); }
+#ifdef DEBUG
   void printNode() const override { std::cout << "NullExpression\n"; }
+#endif
 };
 
 // Named simply means it was defined with a name, but will behave the same
@@ -72,7 +77,6 @@ class FunctionLiteral : public Expression {
         m_function_block(std::move(block)) {}
 
   void addArgument(const Identifier& id) { m_args.push_back(id); }
-
   Block* block() const { return m_function_block.get(); }
   bool isAnonymous() const { return m_type == FunctionType::anonymous; }
   bool isNamed() const { return m_type == FunctionType::named; }
@@ -84,7 +88,10 @@ class FunctionLiteral : public Expression {
   std::string_view name() const { return m_function_name; }
 
   void visit(NodeVisitor& v) override { v.visitFunctionLiteral(*this); }
+
+#ifdef DEBUG
   void printNode() const override;
+#endif
 
  private:
   FunctionType m_type;
@@ -105,6 +112,8 @@ class ArrayLiteral : public Expression {
   const auto& elements() const { return m_elements; }
 
   void visit(NodeVisitor& v) override { v.visitArrayLiteral(*this); }
+
+#ifdef DEBUG
   void printNode() const override {
     std::cout << "ArrayLiteral(";
     if (!m_elements.empty()) {
@@ -116,6 +125,7 @@ class ArrayLiteral : public Expression {
     }
     std::cout << ")";
   }
+#endif
 
  private:
   std::vector<ExpressionPtr> m_elements;
